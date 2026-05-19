@@ -243,6 +243,29 @@ pub async fn send_command(cmd: String, data: Value, state: State<'_, Arc<AppStat
 }
 
 #[tauri::command]
+pub async fn set_poll_toggle(
+    state: State<'_, Arc<AppState>>,
+    poll: String,
+    on: bool,
+) -> Result<(), String> {
+    let mut ps = state.poll_state.lock().await;
+    match poll.as_str() {
+        "status" => ps.status = on,
+        "meter" => ps.meter = on,
+        "params" => ps.params = on,
+        "spectrum" => ps.spectrum = on,
+        _ => return Err(format!("Unknown poll: {poll}")),
+    }
+    info!("Poll {poll}: {}", if on { "ON" } else { "OFF" });
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn get_poll_state(state: State<'_, Arc<AppState>>) -> Result<crate::state::PollState, String> {
+    Ok(state.poll_state.lock().await.clone())
+}
+
+#[tauri::command]
 pub async fn get_status(state: State<'_, Arc<AppState>>) -> Result<RadioStatus, String> {
     Ok(state.status.lock().await.clone())
 }

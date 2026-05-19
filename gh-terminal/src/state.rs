@@ -103,6 +103,21 @@ impl Default for MeterData {
     }
 }
 
+/// 轮询开关
+#[derive(Debug, Clone, Serialize)]
+pub struct PollState {
+    pub status: bool,
+    pub meter: bool,
+    pub params: bool,
+    pub spectrum: bool,
+}
+
+impl Default for PollState {
+    fn default() -> Self {
+        Self { status: true, meter: true, params: true, spectrum: true }
+    }
+}
+
 pub struct AppState {
     pub status: Mutex<RadioStatus>,
     pub params: Mutex<RadioParams>,
@@ -112,6 +127,7 @@ pub struct AppState {
     pub cmd_tx: Mutex<Option<mpsc::Sender<Vec<u8>>>>,
     pub serial_config: Mutex<Option<SerialConfig>>,
     pub serial_abort: Mutex<Option<JoinHandle<()>>>,
+    pub poll_state: Mutex<PollState>,
 }
 
 pub struct SpectrumBuffer {
@@ -139,6 +155,7 @@ impl AppState {
             cmd_tx: Mutex::new(None),
             serial_config: Mutex::new(None),
             serial_abort: Mutex::new(None),
+            poll_state: Mutex::new(PollState::default()),
         }
     }
 }

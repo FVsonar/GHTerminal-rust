@@ -17,6 +17,7 @@
   import SpectrumControls from './components/SpectrumControls.svelte';
   import CwControls from './components/CwControls.svelte';
   import TunerControl from './components/TunerControl.svelte';
+  import PollControls from './components/PollControls.svelte';
   import SpectrumCanvas from './canvas/SpectrumCanvas.svelte';
   import WaterfallCanvas from './canvas/WaterfallCanvas.svelte';
 
@@ -87,6 +88,7 @@
           <AudioControls />
           <RfControls />
           <NrNbControls />
+          <PollControls />
           <TunerControl />
           <CwControls />
         </div>

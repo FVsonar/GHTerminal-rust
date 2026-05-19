@@ -26,6 +26,8 @@ fn main() {
             commands::connect_serial,
             commands::disconnect_serial,
             commands::send_command,
+            commands::set_poll_toggle,
+            commands::get_poll_state,
             commands::get_status,
             commands::get_params,
             commands::get_meter,
