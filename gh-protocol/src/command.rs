@@ -17,6 +17,9 @@ pub enum RadioCommand {
     // === 3.3 模式设置命令 ===
     SetMode { mode: Mode },
 
+    // === 3.4 频谱数据命令 ===
+    SpectrumRequest,               // 0x39
+
     // === 3.5 状态同步命令 ===
     StatusRequest,
 
@@ -201,6 +204,7 @@ impl RadioCommand {
             RadioCommand::SetSpectrumSpan { .. } => 0x22,
             RadioCommand::SetSpectrumRef { .. } => 0x23,
             RadioCommand::SetSpectrumSpeed { .. } => 0x24,
+            RadioCommand::SpectrumRequest => 0x39,
             RadioCommand::SetDisplayMode { .. } => 0x25,
             RadioCommand::SetCtcss { .. } => 0x26,
             RadioCommand::DeviceTypeRequest => 0x27,
@@ -301,6 +305,7 @@ impl RadioCommand {
             RadioCommand::SetSpectrumSpan { span } => data.push(*span as u8),
             RadioCommand::SetSpectrumRef { value } => data.push(*value),
             RadioCommand::SetSpectrumSpeed { value } => data.push(*value),
+            RadioCommand::SpectrumRequest => {}
             RadioCommand::SetDisplayMode { mode } => data.push(*mode as u8),
             RadioCommand::SetCtcss { tx_ctcss, rx_ctcss, lead_tone } => {
                 data.push(*tx_ctcss);

@@ -88,6 +88,7 @@ async fn poller_task(_handle: tauri::AppHandle, cmd_tx: mpsc::Sender<Vec<u8>>) {
     let mut tick = tokio::time::interval(Duration::from_millis(250));
     let mut meter_tick = tokio::time::interval(Duration::from_millis(1000));
     let mut params_tick = tokio::time::interval(Duration::from_millis(2000));
+    let mut spectrum_tick = tokio::time::interval(Duration::from_millis(80));
 
     loop {
         tokio::select! {
@@ -101,6 +102,10 @@ async fn poller_task(_handle: tauri::AppHandle, cmd_tx: mpsc::Sender<Vec<u8>>) {
             }
             _ = params_tick.tick() => {
                 let cmd = RadioCommand::ParamsRequest.encode().encode();
+                let _ = cmd_tx.send(cmd).await;
+            }
+            _ = spectrum_tick.tick() => {
+                let cmd = RadioCommand::SpectrumRequest.encode().encode();
                 let _ = cmd_tx.send(cmd).await;
             }
         }

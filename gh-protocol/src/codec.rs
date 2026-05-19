@@ -1,5 +1,5 @@
 use crate::error::ProtocolError;
-use crate::packet::{CommandPacket, Frame, SpectrumPacket, HEADER_COMMAND, HEADER_LEN, HEADER_SPECTRUM};
+use crate::packet::{CommandPacket, Frame, HEADER_COMMAND, HEADER_LEN};
 
 /// 帧解码状态机 — 处理连续字节流中的粘包/半包
 #[derive(Debug, Clone)]
@@ -11,7 +11,6 @@ pub struct Codec {
 enum HeaderMatch {
     None,
     Command,
-    Spectrum,
 }
 
 impl Codec {
@@ -72,7 +71,6 @@ impl Codec {
 
         match header_pos {
             HeaderMatch::Command => self.decode_command(),
-            HeaderMatch::Spectrum => self.decode_spectrum(),
             HeaderMatch::None => Ok(None),
         }
     }
@@ -83,8 +81,19 @@ impl Codec {
             return Ok(None);
         }
 
-        // 包长包含 cmd+data+crc, 最小为 3 (cmd=1 + crc=2)
         let payload_len = self.buf[HEADER_LEN] as usize;
+
+        // 频谱响应 (0x39) 包长=0占位，固定520字节
+        if payload_len == 0 && self.buf.len() > HEADER_LEN + 1 && self.buf[HEADER_LEN + 1] == 0x39 {
+            if self.buf.len() < 520 {
+                return Ok(None);
+            }
+            let pkt = CommandPacket::decode(&self.buf[..520])?;
+            self.buf.drain(..520);
+            return Ok(Some(Frame::Command(pkt)));
+        }
+
+        // 普通命令: 包长 >= 3 (cmd + crc 至少)
         if payload_len < 3 {
             return Ok(None);
         }
@@ -100,48 +109,15 @@ impl Codec {
         Ok(Some(Frame::Command(pkt)))
     }
 
-    fn decode_spectrum(&mut self) -> Result<Option<Frame>, ProtocolError> {
-        // 需要至少 header + 一些数据
-        if self.buf.len() < HEADER_LEN + 1 {
-            return Ok(None);
-        }
-
-        // 频谱帧无长度字段 — 尝试猜测版本
-        // V1: 256 data bytes, V2: 80 data bytes
-        let remaining = self.buf.len() - HEADER_LEN;
-
-        let data_len = if remaining >= 256 {
-            256
-        } else if remaining >= 80 {
-            80
-        } else {
-            return Ok(None); // 等待更多数据
-        };
-
-        let total = HEADER_LEN + data_len;
-        let pkt = SpectrumPacket::decode(&self.buf[..total])?;
-        self.buf.drain(..total);
-        Ok(Some(Frame::Spectrum(pkt)))
-    }
-
-    /// 搜索帧头，返回 (类型, 位置)
     fn find_header(buf: &[u8]) -> (HeaderMatch, usize) {
-        // 至少需要 4 字节才能匹配帧头
         if buf.len() < 4 {
             return (HeaderMatch::None, 0);
         }
-
         for i in 0..=buf.len() - 4 {
-            // 优先匹配命令帧头 (0xA5)
             if buf[i..i + 4] == [HEADER_COMMAND; 4] {
                 return (HeaderMatch::Command, i);
             }
-            // 频谱帧头 (0x7E)
-            if buf[i..i + 4] == [HEADER_SPECTRUM; 4] {
-                return (HeaderMatch::Spectrum, i);
-            }
         }
-
         (HeaderMatch::None, 0)
     }
 }
@@ -203,9 +179,13 @@ mod tests {
     fn decode_spectrum_and_command_interleaved() {
         let mut codec = Codec::new();
 
+        // 普通命令
         let cmd = CommandPacket::new(0x07, vec![0x00]).encode();
-        let mut spec = vec![0x7E; 4];
-        spec.extend([0x00; 80]);
+
+        // 新频谱响应 (0x39, 包长=0占位, 512字节数据)
+        let mut spec = vec![0xA5, 0xA5, 0xA5, 0xA5, 0x00, 0x39]; // header + len=0 + cmd=0x39
+        spec.extend([0x00; 512]); // 512 bytes spectrum
+        spec.extend([0x00; 2]);   // CRC placeholder
 
         let mut combined = Vec::new();
         combined.extend(&cmd);
@@ -215,7 +195,10 @@ mod tests {
         assert_eq!(frames.len(), 2);
 
         assert!(matches!(&frames[0], Ok(Frame::Command(_))));
-        assert!(matches!(&frames[1], Ok(Frame::Spectrum(_))));
+        match &frames[1] {
+            Ok(Frame::Command(c)) => assert_eq!(c.cmd, 0x39),
+            _ => panic!("expected spectrum command"),
+        }
     }
 
     #[test]
