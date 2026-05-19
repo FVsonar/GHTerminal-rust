@@ -64,6 +64,22 @@ impl CommandPacket {
 
         // 包长包含 cmd + data + crc
         let payload_len = buf[HEADER_LEN] as usize;
+
+        // 频谱响应 (0x39): 包长=0占位，数据固定512字节，CRC占位
+        if payload_len == 0 {
+            let cmd = buf[HEADER_LEN + 1];
+            if cmd == 0x39 {
+                const SPEC_DATA_LEN: usize = 512;
+                let expected = HEADER_LEN + 1 + 1 + SPEC_DATA_LEN + CRC_LEN;
+                if buf.len() < expected {
+                    return Err(ProtocolError::TruncatedPacket);
+                }
+                let data = buf[HEADER_LEN + 2..HEADER_LEN + 2 + SPEC_DATA_LEN].to_vec();
+                return Ok(Self { cmd, data });
+            }
+            return Err(ProtocolError::InvalidLength);
+        }
+
         if payload_len < 3 {
             return Err(ProtocolError::InvalidLength);
         }
@@ -100,6 +116,13 @@ impl CommandPacket {
             return None;
         }
         let payload_len = buf[HEADER_LEN] as usize;
+
+        // 频谱响应 (0x39): 包长字段为0(占位), 实际数据512字节
+        if payload_len == 0 && buf.len() > HEADER_LEN + 1 && buf[HEADER_LEN + 1] == 0x39 {
+            // header(4) + len(1) + cmd(1) + 512 data + crc(2) = 520
+            return Some(520);
+        }
+
         Some(HEADER_LEN + 1 + payload_len)
     }
 }

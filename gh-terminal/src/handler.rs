@@ -10,6 +10,7 @@ pub fn handle_frame(frame: &Frame, handle: &tauri::AppHandle, state: &SharedStat
         Frame::Command(cmd) => match cmd.cmd {
             0x0B => handle_status_response(&cmd.data, handle, state),
             0x27 => handle_device_type(&cmd.data, handle),
+            0x39 => handle_spectrum_response(&cmd.data, handle, state),
             0x2D => handle_meter_response(&cmd.data, handle, state),
             0x2E => handle_params_response(&cmd.data, handle, state),
             0x07..=0x0A
@@ -116,6 +117,17 @@ fn handle_params_response(data: &[u8], handle: &tauri::AppHandle, state: &Shared
         *p = params.clone();
     }
     let _ = handle.emit("radio-params", &params);
+}
+
+fn handle_spectrum_response(data: &[u8], handle: &tauri::AppHandle, state: &SharedState) {
+    if let Ok(mut spectrum) = state.spectrum.try_lock() {
+        spectrum.latest = data.to_vec();
+        if spectrum.frames.len() >= 256 {
+            spectrum.frames.pop_front();
+        }
+        spectrum.frames.push_back(data.to_vec());
+    }
+    let _ = handle.emit("spectrum-data", data);
 }
 
 fn handle_device_type(data: &[u8], handle: &tauri::AppHandle) {
