@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use serde::Serialize;
 use serde_json::Value;
 use tauri::State;
@@ -31,7 +32,7 @@ pub async fn list_serial_ports() -> Result<Vec<SerialPortInfo>, String> {
 #[tauri::command]
 pub async fn connect_serial(
     app: tauri::AppHandle,
-    state: State<'_, AppState>,
+    state: State<'_, Arc<AppState>>,
     port: String,
     baud: u32,
 ) -> Result<(), String> {
@@ -53,7 +54,7 @@ pub async fn connect_serial(
     *state.connected.lock().await = true;
 
     let app_handle = app.clone();
-    let shared_state = crate::get_app_state().clone();
+    let shared_state = (*state).clone();
     let abort_handle = tokio::spawn(async move {
         crate::serial_port::run_with(app_handle, shared_state, config).await;
     });
@@ -65,7 +66,7 @@ pub async fn connect_serial(
 }
 
 #[tauri::command]
-pub async fn disconnect_serial(state: State<'_, AppState>) -> Result<(), String> {
+pub async fn disconnect_serial(state: State<'_, Arc<AppState>>) -> Result<(), String> {
     if let Some(handle) = state.serial_abort.lock().await.take() {
         handle.abort();
         *state.connected.lock().await = false;
@@ -212,7 +213,7 @@ fn parse_command(cmd: &str, d: &Value) -> Option<RadioCommand> {
 }
 
 #[tauri::command]
-pub async fn send_command(cmd: String, data: Value, state: State<'_, AppState>) -> Result<(), String> {
+pub async fn send_command(cmd: String, data: Value, state: State<'_, Arc<AppState>>) -> Result<(), String> {
     let radio_cmd = parse_command(&cmd, &data).ok_or_else(|| format!("Invalid command: {cmd}"))?;
     let bytes = radio_cmd.encode().encode();
 
@@ -224,16 +225,16 @@ pub async fn send_command(cmd: String, data: Value, state: State<'_, AppState>) 
 }
 
 #[tauri::command]
-pub async fn get_status(state: State<'_, AppState>) -> Result<RadioStatus, String> {
+pub async fn get_status(state: State<'_, Arc<AppState>>) -> Result<RadioStatus, String> {
     Ok(state.status.lock().await.clone())
 }
 
 #[tauri::command]
-pub async fn get_params(state: State<'_, AppState>) -> Result<RadioParams, String> {
+pub async fn get_params(state: State<'_, Arc<AppState>>) -> Result<RadioParams, String> {
     Ok(state.params.lock().await.clone())
 }
 
 #[tauri::command]
-pub async fn get_meter(state: State<'_, AppState>) -> Result<MeterData, String> {
+pub async fn get_meter(state: State<'_, Arc<AppState>>) -> Result<MeterData, String> {
     Ok(state.meter.lock().await.clone())
 }

@@ -5,16 +5,10 @@ mod handler;
 mod serial_port;
 mod state;
 
-use std::sync::{Arc, OnceLock};
+use std::sync::Arc;
 use tracing::info;
 
 use crate::state::AppState;
-
-static APP_STATE: OnceLock<Arc<AppState>> = OnceLock::new();
-
-pub fn get_app_state() -> &'static Arc<AppState> {
-    APP_STATE.get().expect("APP_STATE not initialized")
-}
 
 fn main() {
     tracing_subscriber::fmt()
@@ -24,7 +18,6 @@ fn main() {
     info!("Starting GH-Terminal...");
 
     let app_state = Arc::new(AppState::new());
-    let _ = APP_STATE.set(app_state.clone());
 
     tauri::Builder::default()
         .manage(app_state)
