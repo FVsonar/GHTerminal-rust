@@ -6,36 +6,62 @@
   let s = $derived($radioStatus);
 </script>
 
-<div>
+<div class="panel">
   <div class="panel-title">VFO</div>
-  <div class="flex-row">
-    <button
-      class:active={s.v === 0}
-      onclick={() => sendCommand('set_ab', { mode: 0 })}
-    >
-      A: {MODES[s.mA] || 'USB'} {(s.fA / 1000000).toFixed(3)}
+  <div class="vfo-list">
+    <button class="vfo-btn" class:active={s.v === 0} onclick={() => sendCommand('set_ab', { mode: 0 })}>
+      <span class="vfo-label">A</span>
+      <span class="vfo-freq">{(s.fA / 1_000_000).toFixed(3)}</span>
+      <span class="vfo-mode">{MODES[s.mA] || 'USB'}</span>
+    </button>
+    <button class="vfo-btn" class:active={s.v === 1} onclick={() => sendCommand('set_ab', { mode: 1 })}>
+      <span class="vfo-label">B</span>
+      <span class="vfo-freq">{(s.fB / 1_000_000).toFixed(3)}</span>
+      <span class="vfo-mode">{MODES[s.mB] || 'USB'}</span>
     </button>
   </div>
-  <div class="flex-row" style="margin-top:4px;">
-    <button
-      class:active={s.v === 1}
-      onclick={() => sendCommand('set_ab', { mode: 1 })}
-    >
-      B: {MODES[s.mB] || 'USB'} {(s.fB / 1000000).toFixed(3)}
-    </button>
-  </div>
-  <div class="flex-row" style="margin-top:4px;">
-    <button onclick={() => sendCommand('status_request')}>
-      刷新状态
-    </button>
-  </div>
+  <button class="refresh-btn" onclick={() => sendCommand('status_request')}>刷新状态</button>
 </div>
 
 <style>
-  button {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 220px;
+  .vfo-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+  .vfo-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    width: 100%;
+    text-align: left;
+  }
+  .vfo-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: var(--bg-input);
+    padding: 2px 6px;
+    border-radius: 3px;
+    min-width: 20px;
+    text-align: center;
+  }
+  .vfo-btn.active .vfo-label {
+    background: var(--accent-blue);
+    color: #fff;
+  }
+  .vfo-freq {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .vfo-mode {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-left: auto;
+  }
+  .refresh-btn {
+    width: 100%;
+    font-size: 11px;
+    padding: 5px;
+    color: var(--text-muted);
   }
 </style>
