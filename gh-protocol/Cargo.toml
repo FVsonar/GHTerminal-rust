@@ -1,0 +1,9 @@
+[package]
+name = "gh-protocol"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+
+[dev-dependencies]
+hex-literal = "0.4"
