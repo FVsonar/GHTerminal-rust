@@ -24,17 +24,19 @@
   let conn = $derived($connectionStatus);
 
   onMount(() => {
-    unlisteners = [
-      onEvent('radio-status', (d) => radioStatus.update(s => ({ ...s, ...d }))),
-      onEvent('radio-params', (d) => radioParams.update(s => ({ ...s, ...d }))),
-      onEvent('meter-data', (d) => meterData.update(s => ({ ...s, ...d }))),
-      onEvent('spectrum-data', (d) => spectrumData.set({ data: new Uint8Array(d), timestamp: Date.now() })),
+    Promise.all([
+      onEvent('radio-status', (d) => { console.log('radio-status:', d); radioStatus.update(s => ({ ...s, ...d })); }),
+      onEvent('radio-params', (d) => { console.log('radio-params:', d); radioParams.update(s => ({ ...s, ...d })); }),
+      onEvent('meter-data', (d) => { console.log('meter-data:', d); meterData.update(s => ({ ...s, ...d })); }),
+      onEvent('spectrum-data', (d) => { console.log('spectrum-data:', d.byteLength); spectrumData.set({ data: new Uint8Array(d), timestamp: Date.now() }); }),
       onEvent('radio-error', (d) => console.warn('Radio error:', d)),
-    ];
-  });
+    ]).then(fns => {
+      unlisteners = fns;
+    });
 
-  onDestroy(() => {
-    unlisteners.forEach(fn => fn());
+    return () => {
+      unlisteners.forEach(fn => fn());
+    };
   });
 </script>
 
