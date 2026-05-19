@@ -1,7 +1,7 @@
 <script>
   import './app.css';
   import { onMount, onDestroy } from 'svelte';
-  import { onEvent, getStatus, getParams, getMeter } from './lib/tauri-bridge.js';
+  import { onEvent } from './lib/tauri-bridge.js';
   import { radioStatus, radioParams, meterData, spectrumData, connectionStatus } from './lib/store.js';
 
   import SerialConnect from './components/SerialConnect.svelte';
@@ -21,6 +21,7 @@
   import WaterfallCanvas from './canvas/WaterfallCanvas.svelte';
 
   let unlisteners = [];
+  let conn = $derived($connectionStatus);
 
   onMount(() => {
     unlisteners = [
@@ -28,7 +29,7 @@
       onEvent('radio-params', (d) => radioParams.update(s => ({ ...s, ...d }))),
       onEvent('meter-data', (d) => meterData.update(s => ({ ...s, ...d }))),
       onEvent('spectrum-data', (d) => spectrumData.set({ data: new Uint8Array(d), timestamp: Date.now() })),
-      onEvent('radio-error', (d) => connectionStatus.update(s => ({ ...s, error: d }))),
+      onEvent('radio-error', (d) => console.warn('Radio error:', d)),
     ];
   });
 
@@ -38,55 +39,71 @@
 </script>
 
 <main class="app-layout">
+  <!-- 未连接时全屏遮罩 -->
+  {#if !conn.connected}
+    <SerialConnect />
+  {/if}
+
+  <!-- 顶部栏 -->
   <header class="top-bar">
     <h1 class="app-title">GH-Terminal</h1>
-    <StatusBar />
-    <div style="margin-left:auto;"></div>
-    <SerialConnect />
+    {#if conn.connected}
+      <StatusBar />
+      <div style="margin-left:auto;"></div>
+      <SerialConnect />
+    {/if}
   </header>
 
-  <div class="main-content">
-    <section class="spectrum-area">
-      <div class="canvas-container" style="height: 150px;">
-        <SpectrumCanvas />
-      </div>
-      <div class="canvas-container" style="height: 80px;">
-        <WaterfallCanvas />
-      </div>
-      <SpectrumControls />
-    </section>
+  {#if conn.connected}
+    <div class="main-content">
+      <section class="spectrum-area">
+        <div class="canvas-container" style="height: 150px;">
+          <SpectrumCanvas />
+        </div>
+        <div class="canvas-container" style="height: 80px;">
+          <WaterfallCanvas />
+        </div>
+        <SpectrumControls />
+      </section>
 
-    <section class="controls-area">
-      <div class="controls-grid">
-        <div class="panel">
-          <FrequencyControl />
-          <ModeSelector />
-          <PttButton />
+      <section class="controls-area">
+        <div class="controls-grid">
+          <div class="panel">
+            <FrequencyControl />
+            <ModeSelector />
+            <PttButton />
+          </div>
+          <div class="panel">
+            <VfoPanel />
+          </div>
+          <div class="panel">
+            <MeterDisplay />
+          </div>
+          <div class="panel">
+            <AudioControls />
+          </div>
+          <div class="panel">
+            <RfControls />
+          </div>
+          <div class="panel">
+            <NrNbControls />
+          </div>
+          <div class="panel">
+            <TunerControl />
+          </div>
+          <div class="panel">
+            <CwControls />
+          </div>
         </div>
-        <div class="panel">
-          <VfoPanel />
-        </div>
-        <div class="panel">
-          <MeterDisplay />
-        </div>
-        <div class="panel">
-          <AudioControls />
-        </div>
-        <div class="panel">
-          <RfControls />
-        </div>
-        <div class="panel">
-          <NrNbControls />
-        </div>
-        <div class="panel">
-          <TunerControl />
-        </div>
-        <div class="panel">
-          <CwControls />
-        </div>
-      </div>
-    </section>
-  </div>
+      </section>
+    </div>
+  {:else}
+    <!-- 未连接时的占位界面 -->
+    <div class="placeholder">
+      <div class="placeholder-icon">🔌</div>
+      <p>请先连接电台串口设备</p>
+    </div>
+  {/if}
 </main>
 
 <style>
@@ -133,5 +150,21 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 8px;
+  }
+  .placeholder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    gap: 16px;
+    opacity: 0.5;
+  }
+  .placeholder-icon {
+    font-size: 64px;
+  }
+  .placeholder p {
+    font-size: 16px;
   }
 </style>
