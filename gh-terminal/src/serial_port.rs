@@ -1,35 +1,18 @@
 use tauri::Emitter;
 use tokio::sync::mpsc;
-use tokio_serial::SerialPortBuilderExt;
-use tracing::{error, info, warn};
+use tokio_serial::SerialStream;
+use tracing::{error, warn};
 
 use gh_protocol::{Codec, RadioCommand};
 
 use crate::handler;
-use crate::state::{SerialConfig, SharedState};
+use crate::state::SharedState;
 
-pub async fn run_with(handle: tauri::AppHandle, state: SharedState, config: SerialConfig) {
-    info!("Opening serial port {} at {} baud", config.port, config.baud_rate);
-
-    let port = match tokio_serial::new(&config.port, config.baud_rate)
-        .data_bits(tokio_serial::DataBits::Eight)
-        .stop_bits(tokio_serial::StopBits::One)
-        .parity(tokio_serial::Parity::None)
-        .flow_control(tokio_serial::FlowControl::None)
-        .open_native_async()
-    {
-        Ok(p) => p,
-        Err(e) => {
-            error!("Failed to open serial port {}: {}", config.port, e);
-            let _ = handle.emit("radio-error", format!("串口打开失败: {e}"));
-            let _ = handle.emit("serial-status", serde_json::json!({"connected": false, "port": config.port}));
-            return;
-        }
-    };
-
-    info!("Serial port {} opened", config.port);
-    let _ = handle.emit("serial-status", serde_json::json!({"connected": true, "port": config.port}));
-
+pub async fn run_with_port(
+    handle: tauri::AppHandle,
+    state: SharedState,
+    port: SerialStream,
+) {
     let (reader, writer) = tokio::io::split(port);
     let (cmd_tx, cmd_rx) = mpsc::channel::<Vec<u8>>(32);
 
@@ -61,7 +44,7 @@ pub async fn run_with(handle: tauri::AppHandle, state: SharedState, config: Seri
 }
 
 async fn reader_task(
-    reader: tokio::io::ReadHalf<tokio_serial::SerialStream>,
+    reader: tokio::io::ReadHalf<SerialStream>,
     handle: tauri::AppHandle,
     state: SharedState,
 ) -> std::io::Result<()> {
@@ -93,7 +76,7 @@ async fn reader_task(
 }
 
 async fn writer_task(
-    writer: tokio::io::WriteHalf<tokio_serial::SerialStream>,
+    writer: tokio::io::WriteHalf<SerialStream>,
     mut cmd_rx: mpsc::Receiver<Vec<u8>>,
 ) -> std::io::Result<()> {
     use tokio::io::AsyncWriteExt;

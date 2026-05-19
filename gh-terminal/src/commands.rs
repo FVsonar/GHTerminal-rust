@@ -1,7 +1,8 @@
 use std::sync::Arc;
 use serde::Serialize;
 use serde_json::Value;
-use tauri::State;
+use tauri::{Emitter, State};
+use tokio_serial::SerialPortBuilderExt;
 use tracing::{info, warn};
 
 use gh_protocol::RadioCommand;
@@ -42,26 +43,36 @@ pub async fn connect_serial(
         info!("Disconnected previous serial connection");
     }
 
+    // 先尝试打开端口 (验证可用性)
+    let serial_port = tokio_serial::new(&port, baud)
+        .data_bits(tokio_serial::DataBits::Eight)
+        .stop_bits(tokio_serial::StopBits::One)
+        .parity(tokio_serial::Parity::None)
+        .flow_control(tokio_serial::FlowControl::None)
+        .open_native_async()
+        .map_err(|e| format!("无法打开串口 {}: {}", port, e))?;
+
+    info!("Serial port {} opened successfully", port);
+
     let config = SerialConfig {
         port: port.clone(),
         baud_rate: baud,
     };
 
-    // 保存配置
     *state.serial_config.lock().await = Some(config.clone());
-
-    // 标记连接中
     *state.connected.lock().await = true;
 
     let app_handle = app.clone();
     let shared_state = (*state).clone();
+
+    // 生成后台读写/轮询任务 (传入已打开的端口)
     let abort_handle = tokio::spawn(async move {
-        crate::serial_port::run_with(app_handle, shared_state, config).await;
+        crate::serial_port::run_with_port(app_handle, shared_state, serial_port).await;
     });
 
     *state.serial_abort.lock().await = Some(abort_handle);
 
-    info!("Connecting to {} at {} baud", port, baud);
+    let _ = app.emit("serial-status", serde_json::json!({"connected": true, "port": &port}));
     Ok(())
 }
 

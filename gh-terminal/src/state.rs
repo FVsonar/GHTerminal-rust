@@ -5,6 +5,7 @@ use tokio::task::JoinHandle;
 use serde::Serialize;
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct SerialConfig {
     pub port: String,
     pub baud_rate: u32,
