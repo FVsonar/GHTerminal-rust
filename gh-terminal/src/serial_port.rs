@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tauri::Emitter;
 use tokio::sync::mpsc;
-use tracing::{error, warn};
+use tracing::{error, info, warn};
 
 use gh_protocol::{Codec, RadioCommand};
 
@@ -51,11 +51,11 @@ pub async fn run_with_port(
             }
             // 打印收到的原始字节
             let hex: String = buf[..n].iter().map(|b| format!("{b:02X}")).collect::<Vec<_>>().join(" ");
-            tracing::info!("RAW [{n}]: {hex}");
+            info!("RAW [{n}]: {hex}");
             for frame_result in codec.feed(&buf[..n]) {
                 match frame_result {
                     Ok(frame) => {
-                        tracing::info!("Decoded frame: {frame:?}");
+                        info!("Decoded frame: {frame:?}");
                         handler::handle_frame(&frame, &read_handle, &read_state)
                     }
                     Err(e) => warn!("Protocol decode error: {e}"),
@@ -68,6 +68,8 @@ pub async fn run_with_port(
     let write_port = shared_port.clone();
     tokio::spawn(async move {
         while let Some(data) = cmd_rx.recv().await {
+            let hex: String = data.iter().map(|b| format!("{b:02X}")).collect::<Vec<_>>().join(" ");
+            info!("SERIAL WRITE [{len}]: {hex}", len = data.len());
             let mut port = write_port.lock().unwrap();
             if let Err(e) = port.write_all(&data) {
                 error!("Serial write error: {e}");

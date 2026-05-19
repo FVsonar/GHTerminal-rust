@@ -1,5 +1,5 @@
 use tauri::Emitter;
-use tracing::{debug, warn};
+use tracing::{debug, info, warn};
 
 use gh_protocol::Frame;
 
@@ -41,7 +41,7 @@ pub fn handle_frame(frame: &Frame, handle: &tauri::AppHandle, state: &SharedStat
 }
 
 fn handle_status_response(data: &[u8], handle: &tauri::AppHandle, state: &SharedState) {
-    tracing::info!("Status response: {} bytes", data.len());
+    info!("Status response: {} bytes", data.len());
     if data.len() < 24 {
         warn!("status response too short: {} bytes", data.len());
         return;
