@@ -184,7 +184,7 @@ pub enum DeviceType {
     Pmr119 = 5,
     Sjr188 = 6,
     Pmr171 = 7,
-    Xp100 = 7, // note: XP-100 also maps to 7 in 11.12; PMR-171 is 7 in earlier tables
+    Xp100 = 8,
 }
 
 impl DeviceType {
@@ -198,6 +198,7 @@ impl DeviceType {
             5 => DeviceType::Pmr119,
             6 => DeviceType::Sjr188,
             7 => DeviceType::Pmr171,
+            8 => DeviceType::Xp100,
             _ => return None,
         })
     }

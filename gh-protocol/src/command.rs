@@ -326,7 +326,7 @@ impl RadioCommand {
             RadioCommand::SetCwDecode { on } => data.push(if *on { 1 } else { 0 }),
             RadioCommand::SetCwDecodeThreshold { value } => data.push(*value),
             // MESH
-            RadioCommand::SendMeshData { mesh_data } => data.extend(mesh_data),
+            RadioCommand::SendMeshData { data: mesh_data } => data.extend(mesh_data),
             // 信道
             RadioCommand::WriteChannel {
                 channel,
@@ -469,7 +469,7 @@ impl RadioCommand {
                 data.push((ps >> 8) as u8);
                 data.push((ps & 0xFF) as u8);
             }
-            RadioCommand::FwData { packet_no, fw_data } => {
+            RadioCommand::FwData { packet_no, data: fw_data } => {
                 let pn = *packet_no;
                 data.push((pn >> 8) as u8);
                 data.push((pn & 0xFF) as u8);
@@ -509,7 +509,7 @@ mod tests {
         let cmd = RadioCommand::SetFrequency { freq: 14074000 };
         let pkt = cmd.encode();
         assert_eq!(pkt.cmd, 0x09);
-        assert_eq!(pkt.data, vec![0x00, 0xD6, 0xBE, 0x88]);
+        assert_eq!(pkt.data, vec![0x00, 0xD6, 0xC0, 0x90]);
     }
 
     #[test]

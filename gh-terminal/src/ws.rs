@@ -4,6 +4,7 @@ use axum::extract::Extension;
 use axum::response::IntoResponse;
 use futures_util::{SinkExt, StreamExt};
 use serde_json::Value;
+use tokio::sync::broadcast;
 use tracing::{debug, error, warn};
 
 use gh_protocol::RadioCommand;
@@ -52,7 +53,7 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
     let (mut ws_sender, mut ws_receiver) = socket.split();
 
     // 广播事件 → 浏览器
-    let send_state = state.clone();
+    let _send_state = state.clone();
     let mut send_task = tokio::spawn(async move {
         loop {
             match event_rx.recv().await {

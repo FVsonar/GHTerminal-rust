@@ -209,6 +209,6 @@ mod tests {
         let encoded = pkt.encode();
         assert_eq!(encoded[4], 0x05); // 包长: cmd(1) + data(4) = 5
         assert_eq!(encoded[5], 0x09);
-        assert_eq!(&encoded[6..10], &[0x00, 0xD6, 0xBE, 0x88]);
+        assert_eq!(&encoded[6..10], &[0x00, 0xD6, 0xC0, 0x90]);
     }
 }

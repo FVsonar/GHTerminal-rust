@@ -1,6 +1,6 @@
 use clap::Parser;
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone)]
 #[command(name = "gh-terminal", about = "国赫电台控制终端")]
 pub struct Cli {
     /// 串口路径
