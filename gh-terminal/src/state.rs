@@ -2,7 +2,6 @@ use std::collections::VecDeque;
 use std::sync::atomic::{AtomicBool, Ordering};
 use tokio::sync::{broadcast, RwLock};
 
-use gh_protocol::types::*;
 
 /// 状态广播事件
 #[derive(Debug, Clone)]

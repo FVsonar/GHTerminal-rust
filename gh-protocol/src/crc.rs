@@ -39,6 +39,6 @@ mod tests {
         // 模拟一个简单的命令包 (包长=0x02, 命令=0x0B, 也就是状态同步请求)
         let data = &[0x02, 0x0B];
         let crc = crc16_ccitt_false(data);
-        assert_eq!(crc, 0x6B29);
+        assert_eq!(crc, 0xCA06);
     }
 }
