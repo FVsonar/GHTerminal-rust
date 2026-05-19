@@ -1,47 +1,24 @@
 <script>
   import { sendCommand } from '../lib/tauri-bridge.js';
   import { radioParams } from '../lib/store.js';
-
   let p = $derived($radioParams);
-
-  function sliderCmd(cmd, e) {
-    sendCommand(cmd, { [cmd.split('_')[1] === 'vol' ? 'vol' : cmd === 'set_mic_gain' ? 'gain' : 'value']: parseInt(e.target.value) });
-  }
 </script>
 
-<div>
+<div class="panel">
   <div class="panel-title">AF 音频</div>
-
-  <label>扬声器音量: {p.sv}</label>
-  <input type="range" min="0" max="30" value={p.sv}
-    oninput={(e) => sendCommand('set_speaker_vol', { vol: parseInt(e.target.value) })} />
-
-  <label>耳机音量: {p.hv}</label>
-  <input type="range" min="0" max="80" value={p.hv}
-    oninput={(e) => sendCommand('set_headphone_vol', { vol: parseInt(e.target.value) })} />
-
-  <label>MIC 增益: {p.mg}</label>
-  <input type="range" min="0" max="100" value={p.mg}
-    oninput={(e) => sendCommand('set_mic_gain', { gain: parseInt(e.target.value) })} />
-
-  <label>压扩比: {p.cmp}</label>
-  <input type="range" min="0" max="14" value={p.cmp}
-    oninput={(e) => sendCommand('set_compandor', { ratio: parseInt(e.target.value) })} />
-
-  <label>低音 EQ: {p.bass}</label>
-  <input type="range" min="0" max="40" value={p.bass}
-    oninput={(e) => sendCommand('set_bass_eq', { value: parseInt(e.target.value) })} />
-
-  <label>高音 EQ: {p.treb}</label>
-  <input type="range" min="0" max="40" value={p.treb}
-    oninput={(e) => sendCommand('set_treble_eq', { value: parseInt(e.target.value) })} />
+  <Slider label="扬声器" value={p.sv} min={0} max={30} onchange={(v) => sendCommand('set_speaker_vol', { vol: v })} />
+  <Slider label="耳机" value={p.hv} min={0} max={80} onchange={(v) => sendCommand('set_headphone_vol', { vol: v })} />
+  <Slider label="MIC增益" value={p.mg} min={0} max={100} onchange={(v) => sendCommand('set_mic_gain', { gain: v })} />
+  <Slider label="压扩比" value={p.cmp} min={0} max={14} onchange={(v) => sendCommand('set_compandor', { ratio: v })} />
+  <Slider label="低音EQ" value={p.bass} min={0} max={40} onchange={(v) => sendCommand('set_bass_eq', { value: v })} />
+  <Slider label="高音EQ" value={p.treb} min={0} max={40} onchange={(v) => sendCommand('set_treble_eq', { value: v })} />
 </div>
 
+{#snippet Slider(s)}<div class="slider-row"><label>{s.label}</label><span class="slider-val">{s.value}</span><input type="range" min={s.min} max={s.max} value={s.value} oninput={(e) => s.onchange(parseInt(e.target.value))} /></div>{/snippet}
+
 <style>
-  input[type="range"] {
-    width: 100%;
-    accent-color: var(--accent-blue);
-    height: 4px;
-    margin: 4px 0 8px 0;
-  }
+  .slider-row { margin-bottom: 2px; }
+  .slider-row label { margin-bottom: 0; font-size: 10px; display: inline; }
+  .slider-val { float: right; font-family: var(--font-mono); font-size: 11px; color: var(--text-primary); }
+  input[type="range"] { margin: 2px 0 6px 0; }
 </style>

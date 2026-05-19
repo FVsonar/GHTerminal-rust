@@ -1,15 +1,15 @@
 <script>
   import './app.css';
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount } from 'svelte';
   import { onEvent } from './lib/tauri-bridge.js';
   import { radioStatus, radioParams, meterData, spectrumData, connectionStatus } from './lib/store.js';
 
   import SerialConnect from './components/SerialConnect.svelte';
   import StatusBar from './components/StatusBar.svelte';
+  import MeterDisplay from './components/MeterDisplay.svelte';
   import FrequencyControl from './components/FrequencyControl.svelte';
   import ModeSelector from './components/ModeSelector.svelte';
   import PttButton from './components/PttButton.svelte';
-  import MeterDisplay from './components/MeterDisplay.svelte';
   import VfoPanel from './components/VfoPanel.svelte';
   import AudioControls from './components/AudioControls.svelte';
   import RfControls from './components/RfControls.svelte';
@@ -25,148 +25,189 @@
 
   onMount(() => {
     Promise.all([
-      onEvent('radio-status', (d) => { console.log('radio-status:', d); radioStatus.update(s => ({ ...s, ...d })); }),
-      onEvent('radio-params', (d) => { console.log('radio-params:', d); radioParams.update(s => ({ ...s, ...d })); }),
-      onEvent('meter-data', (d) => { console.log('meter-data:', d); meterData.update(s => ({ ...s, ...d })); }),
-      onEvent('spectrum-data', (d) => { console.log('spectrum-data:', d.byteLength); spectrumData.set({ data: new Uint8Array(d), timestamp: Date.now() }); }),
-      onEvent('radio-error', (d) => console.warn('Radio error:', d)),
-    ]).then(fns => {
-      unlisteners = fns;
-    });
+      onEvent('radio-status', (d) => radioStatus.update(s => ({ ...s, ...d }))),
+      onEvent('radio-params', (d) => radioParams.update(s => ({ ...s, ...d }))),
+      onEvent('meter-data', (d) => meterData.update(s => ({ ...s, ...d }))),
+      onEvent('spectrum-data', (d) => spectrumData.set({ data: new Uint8Array(d), timestamp: Date.now() })),
+      onEvent('radio-error', () => {}),
+    ]).then(fns => { unlisteners = fns; });
 
-    return () => {
-      unlisteners.forEach(fn => fn());
-    };
+    return () => unlisteners.forEach(fn => fn());
   });
 </script>
 
-<main class="app-layout">
-  <!-- 未连接时全屏遮罩 -->
-  {#if !conn.connected}
-    <SerialConnect />
-  {/if}
+<!-- 未连接遮罩 -->
+{#if !conn.connected}
+  <SerialConnect />
+{/if}
 
+<main class="app-shell">
   <!-- 顶部栏 -->
-  <header class="top-bar">
-    <h1 class="app-title">GH-Terminal</h1>
+  <header class="header">
+    <div class="header-left">
+      <div class="logo-dot"></div>
+      <span class="logo-text">GH-Terminal</span>
+    </div>
     {#if conn.connected}
       <StatusBar />
-      <div style="margin-left:auto;"></div>
-      <SerialConnect />
     {/if}
+    <div class="header-right">
+      {#if conn.connected}
+        <SerialConnect />
+      {/if}
+    </div>
   </header>
 
   {#if conn.connected}
-    <div class="main-content">
-      <section class="spectrum-area">
-        <div class="canvas-container" style="height: 150px;">
+    <div class="main-area">
+      <!-- 仪表行 -->
+      <div class="meter-row">
+        <MeterDisplay />
+      </div>
+
+      <!-- 频谱 -->
+      <div class="spectrum-section">
+        <div class="spectrum-canvas-wrap">
           <SpectrumCanvas />
         </div>
-        <div class="canvas-container" style="height: 80px;">
+        <div class="waterfall-canvas-wrap">
           <WaterfallCanvas />
         </div>
-        <SpectrumControls />
-      </section>
-
-      <section class="controls-area">
-        <div class="controls-grid">
-          <div class="panel">
-            <FrequencyControl />
-            <ModeSelector />
-            <PttButton />
-          </div>
-          <div class="panel">
-            <VfoPanel />
-          </div>
-          <div class="panel">
-            <MeterDisplay />
-          </div>
-          <div class="panel">
-            <AudioControls />
-          </div>
-          <div class="panel">
-            <RfControls />
-          </div>
-          <div class="panel">
-            <NrNbControls />
-          </div>
-          <div class="panel">
-            <TunerControl />
-          </div>
-          <div class="panel">
-            <CwControls />
-          </div>
+        <div class="spectrum-ctrl-wrap">
+          <SpectrumControls />
         </div>
-      </section>
+      </div>
+
+      <!-- 控制面板 -->
+      <div class="controls-scroll">
+        <div class="controls-grid">
+          <FrequencyControl />
+          <ModeSelector />
+          <PttButton />
+          <VfoPanel />
+          <AudioControls />
+          <RfControls />
+          <NrNbControls />
+          <TunerControl />
+          <CwControls />
+        </div>
+      </div>
     </div>
   {:else}
-    <!-- 未连接时的占位界面 -->
-    <div class="placeholder">
-      <div class="placeholder-icon">🔌</div>
-      <p>请先连接电台串口设备</p>
+    <div class="placeholder-screen">
+      <div class="placeholder-icon">📡</div>
+      <p>请连接电台设备</p>
     </div>
   {/if}
 </main>
 
 <style>
-  .app-layout {
+  .app-shell {
     display: flex;
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
   }
-  .top-bar {
+
+  .header {
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 8px 16px;
-    background: var(--bg-secondary);
+    padding: 0 16px;
+    height: 48px;
+    background: var(--bg-panel);
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
+    z-index: 10;
   }
-  .app-title {
-    font-size: 16px;
-    color: var(--accent);
-    letter-spacing: 2px;
-    white-space: nowrap;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
-  .main-content {
+
+  .logo-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    box-shadow: 0 0 8px rgba(0,229,160,0.5);
+  }
+
+  .logo-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-green);
+    letter-spacing: 1px;
+  }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+  }
+
+  .main-area {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
   }
-  .spectrum-area {
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+
+  /* 仪表行 */
+  .meter-row {
+    padding: 8px 16px 4px;
     flex-shrink: 0;
   }
-  .controls-area {
+
+  /* 频谱区域 */
+  .spectrum-section {
+    padding: 4px 16px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .spectrum-canvas-wrap {
+    height: 110px;
+    background: #000;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .waterfall-canvas-wrap {
+    height: 45px;
+    background: #000;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .spectrum-ctrl-wrap {
+    margin-top: 4px;
+  }
+
+  /* 控制面板滚动区 */
+  .controls-scroll {
     flex: 1;
     overflow-y: auto;
-    padding: 8px;
+    padding: 4px 16px 12px;
   }
   .controls-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
     gap: 8px;
   }
-  .placeholder {
+
+  .placeholder-screen {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: var(--text-secondary);
-    gap: 16px;
-    opacity: 0.5;
+    color: var(--text-muted);
+    gap: 14px;
   }
-  .placeholder-icon {
-    font-size: 64px;
-  }
-  .placeholder p {
-    font-size: 16px;
-  }
+  .placeholder-icon { font-size: 56px; opacity: 0.6; }
+  .placeholder-screen p { font-size: 15px; }
 </style>
