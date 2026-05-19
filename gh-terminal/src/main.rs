@@ -1,39 +1,42 @@
-mod api_routes;
-mod assets;
-mod config;
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
+mod commands;
 mod handler;
 mod serial_port;
 mod state;
-mod ws;
 
 use std::sync::Arc;
-use clap::Parser;
 use tracing::info;
 
-#[tokio::main]
-async fn main() {
-    let config = config::Cli::parse();
+use crate::state::AppState;
 
+fn main() {
     tracing_subscriber::fmt()
-        .with_env_filter(&config.log_filter)
+        .with_max_level(tracing::Level::INFO)
         .init();
 
     info!("Starting GH-Terminal...");
 
-    let app_state = Arc::new(state::AppState::new());
+    let app_state = Arc::new(AppState::new());
 
-    // 启动串口任务
-    let serial_state = app_state.clone();
-    let serial_config = config.clone();
-    tokio::spawn(async move {
-        serial_port::run(serial_state, &serial_config).await;
-    });
+    tauri::Builder::default()
+        .manage(app_state.clone())
+        .setup(move |app| {
+            let handle = app.handle().clone();
+            let state = app_state.clone();
 
-    // 启动 HTTP/WS 服务
-    let router = api_routes::build_router(app_state);
-    let addr = format!("0.0.0.0:{}", config.http_port);
-    info!("HTTP server listening on http://{addr}");
+            tokio::spawn(async move {
+                serial_port::run(handle, state).await;
+            });
 
-    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
-    axum::serve(listener, router).await.unwrap();
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![
+            commands::send_command,
+            commands::get_status,
+            commands::get_params,
+            commands::get_meter,
+        ])
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
 }

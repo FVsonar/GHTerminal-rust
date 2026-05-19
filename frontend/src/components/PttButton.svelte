@@ -1,5 +1,5 @@
 <script>
-  import { radioSocket } from '../lib/ws.js';
+  import { sendCommand } from '../lib/tauri-bridge.js';
   import { radioStatus } from '../lib/store.js';
 
   let s = $derived($radioStatus);
@@ -7,12 +7,12 @@
 
   function pttDown() {
     pttActive = true;
-    radioSocket.cmd('ptt', { pressed: true });
+    sendCommand('ptt', { pressed: true });
   }
 
   function pttUp() {
     pttActive = false;
-    radioSocket.cmd('ptt', { pressed: false });
+    sendCommand('ptt', { pressed: false });
   }
 </script>
 

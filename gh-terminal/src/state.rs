@@ -1,53 +1,64 @@
 use std::collections::VecDeque;
-use std::sync::atomic::{AtomicBool, Ordering};
-use tokio::sync::{broadcast, RwLock};
+use std::sync::Arc;
+use tokio::sync::{mpsc, Mutex};
+use serde::Serialize;
 
-
-/// 状态广播事件
-#[derive(Debug, Clone)]
-pub enum StateEvent {
-    Status(RadioStatus),
-    Params(RadioParams),
-    Spectrum(SpectrumData),
-    Meter(MeterData),
-    Error(String),
-}
-
-#[derive(Debug, Clone)]
-pub struct SpectrumData {
-    pub data: Vec<u8>,
-}
-
-#[derive(Debug, Clone, Default)]
+/// 前端事件数据结构
+#[derive(Debug, Clone, Serialize)]
 pub struct RadioStatus {
-    pub is_transmitting: bool,
-    pub vfo_a_mode: u8,
-    pub vfo_b_mode: u8,
+    pub tx: bool,
+    #[serde(rename = "fA")]
     pub vfo_a_freq: u32,
+    #[serde(rename = "fB")]
     pub vfo_b_freq: u32,
-    pub active_vfo: u8, // 0=A, 1=B
-    pub nr_nb: u8,      // 0=off, 1=NR, 2=NB
+    #[serde(rename = "mA")]
+    pub vfo_a_mode: u8,
+    #[serde(rename = "mB")]
+    pub vfo_b_mode: u8,
+    pub v: u8,
+    pub nr: u8,
     pub rit: u8,
     pub xit: u8,
-    pub filter_bw: u8,
-    pub spectrum_span: u8,
-    pub voltage: f32,
-    pub utc_hour: u8,
-    pub utc_min: u8,
-    pub utc_sec: u8,
-    pub status_bits: u8,
-    pub s_po_value: u8,   // BIT7=0: S表, BIT7=1: PO表
-    pub swr_aud_alc: u8,  // BIT7,6: 00=SWR, 01=ALC, 10=ADU
+    pub filt: u8,
+    pub span: u8,
+    pub volt: f32,
+    pub utc: [u8; 3],
+    pub sb: u8,
+    pub sm: u8,
+    pub swr: u8,
 }
 
-#[derive(Debug, Clone, Default)]
+impl Default for RadioStatus {
+    fn default() -> Self {
+        Self {
+            tx: false,
+            vfo_a_freq: 14074000,
+            vfo_b_freq: 7100000,
+            vfo_a_mode: 0,
+            vfo_b_mode: 0,
+            v: 0,
+            nr: 0,
+            rit: 0,
+            xit: 0,
+            filt: 10,
+            span: 2,
+            volt: 13.8,
+            utc: [8, 0, 0],
+            sb: 0,
+            sm: 0,
+            swr: 0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct RadioParams {
-    pub speaker_vol: u8,
-    pub headphone_vol: u8,
-    pub mic_gain: u8,
-    pub compandor: u8,
-    pub bass_eq: u8,
-    pub treble_eq: u8,
+    pub sv: u8,
+    pub hv: u8,
+    pub mg: u8,
+    pub cmp: u8,
+    pub bass: u8,
+    pub treb: u8,
     pub rfg: u8,
     pub ifg: u8,
     pub sql: u8,
@@ -55,25 +66,42 @@ pub struct RadioParams {
     pub amp: u8,
     pub nr: u8,
     pub nb: u8,
-    pub peak: u8,
+    pub pk: u8,
+    #[serde(rename = "ref")]
     pub spectrum_ref: u8,
-    pub spectrum_speed: u8,
+    pub spd: u8,
 }
 
-#[derive(Debug, Clone, Default)]
+impl Default for RadioParams {
+    fn default() -> Self {
+        Self {
+            sv: 20, hv: 40, mg: 50, cmp: 7,
+            bass: 20, treb: 20, rfg: 60, ifg: 40,
+            sql: 5, agc: 3, amp: 0, nr: 0, nb: 0,
+            pk: 10, spectrum_ref: 10, spd: 5,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct MeterData {
-    pub s_po_value: u8,
-    pub swr_aud_alc: u8,
+    pub sp: u8,
+    pub swr: u8,
+}
+
+impl Default for MeterData {
+    fn default() -> Self {
+        Self { sp: 0, swr: 0 }
+    }
 }
 
 pub struct AppState {
-    pub connected: AtomicBool,
-    pub status: RwLock<RadioStatus>,
-    pub params: RwLock<RadioParams>,
-    pub spectrum: RwLock<SpectrumBuffer>,
-    pub meter: RwLock<MeterData>,
-    pub event_tx: broadcast::Sender<StateEvent>,
-    pub serial_cmd_tx: RwLock<Option<tokio::sync::mpsc::Sender<Vec<u8>>>>,
+    pub status: Mutex<RadioStatus>,
+    pub params: Mutex<RadioParams>,
+    pub meter: Mutex<MeterData>,
+    pub spectrum: Mutex<SpectrumBuffer>,
+    pub connected: Mutex<bool>,
+    pub cmd_tx: Mutex<Option<mpsc::Sender<Vec<u8>>>>,
 }
 
 pub struct SpectrumBuffer {
@@ -92,37 +120,15 @@ impl Default for SpectrumBuffer {
 
 impl AppState {
     pub fn new() -> Self {
-        let (event_tx, _) = broadcast::channel(256);
         Self {
-            connected: AtomicBool::new(false),
-            status: RwLock::new(RadioStatus::default()),
-            params: RwLock::new(RadioParams::default()),
-            spectrum: RwLock::new(SpectrumBuffer::default()),
-            meter: RwLock::new(MeterData::default()),
-            event_tx,
-            serial_cmd_tx: RwLock::new(None),
-        }
-    }
-
-    pub fn subscribe(&self) -> broadcast::Receiver<StateEvent> {
-        self.event_tx.subscribe()
-    }
-
-    pub fn send_event(&self, event: StateEvent) {
-        let _ = self.event_tx.send(event);
-    }
-
-    pub fn set_connected(&self, connected: bool) {
-        self.connected.store(connected, Ordering::SeqCst);
-    }
-
-    pub fn is_connected(&self) -> bool {
-        self.connected.load(Ordering::SeqCst)
-    }
-
-    pub async fn send_command(&self, data: Vec<u8>) {
-        if let Some(tx) = self.serial_cmd_tx.read().await.as_ref() {
-            let _ = tx.send(data).await;
+            status: Mutex::new(RadioStatus::default()),
+            params: Mutex::new(RadioParams::default()),
+            meter: Mutex::new(MeterData::default()),
+            spectrum: Mutex::new(SpectrumBuffer::default()),
+            connected: Mutex::new(false),
+            cmd_tx: Mutex::new(None),
         }
     }
 }
+
+pub type SharedState = Arc<AppState>;

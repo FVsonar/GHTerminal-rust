@@ -1,18 +1,21 @@
-use std::sync::Arc;
+use tauri::Emitter;
 use tokio::sync::mpsc;
 use tokio_serial::SerialPortBuilderExt;
 use tracing::{error, info, warn};
 
 use gh_protocol::{Codec, RadioCommand};
 
-use crate::config::Cli;
 use crate::handler;
-use crate::state::AppState;
+use crate::state::SharedState;
 
-pub async fn run(state: Arc<AppState>, config: &Cli) {
-    info!("Opening serial port {} at {} baud", config.port, config.baud);
+pub async fn run(handle: tauri::AppHandle, state: SharedState) {
+    // 从 Tauri 资源或环境读取端口配置，此处提供默认值
+    let port_name = "COM3";
+    let baud_rate = 115200;
 
-    let port = match tokio_serial::new(&config.port, config.baud)
+    info!("Opening serial port {port_name} at {baud_rate} baud");
+
+    let port = match tokio_serial::new(port_name, baud_rate)
         .data_bits(tokio_serial::DataBits::Eight)
         .stop_bits(tokio_serial::StopBits::One)
         .parity(tokio_serial::Parity::None)
@@ -21,73 +24,53 @@ pub async fn run(state: Arc<AppState>, config: &Cli) {
     {
         Ok(p) => p,
         Err(e) => {
-            error!("Failed to open serial port {}: {}", config.port, e);
-            state.send_event(crate::state::StateEvent::Error(format!(
-                "串口打开失败: {e}"
-            )));
+            error!("Failed to open serial port {port_name}: {e}");
+            let _ = handle.emit("radio-error", format!("串口打开失败: {e}"));
             return;
         }
     };
 
-    info!("Serial port opened successfully");
-    state.set_connected(true);
+    info!("Serial port opened");
+    {
+        let mut c = state.connected.lock().await;
+        *c = true;
+    }
 
     let (reader, writer) = tokio::io::split(port);
-
-    // 命令发送通道
     let (cmd_tx, cmd_rx) = mpsc::channel::<Vec<u8>>(32);
+
     {
-        let mut tx = state.serial_cmd_tx.write().await;
+        let mut tx = state.cmd_tx.lock().await;
         *tx = Some(cmd_tx.clone());
     }
 
-    let poll_interval = config.poll_interval_ms;
-
     // 读任务
-    let state_r = state.clone();
-    let reader_handle = tokio::spawn(async move {
-        if let Err(e) = reader_task(reader, state_r).await {
+    let h1 = handle.clone();
+    let s1 = state.clone();
+    tokio::spawn(async move {
+        if let Err(e) = reader_task(reader, h1, s1).await {
             error!("Reader task error: {e}");
         }
     });
 
     // 写任务
-    let writer_handle = tokio::spawn(async move {
+    tokio::spawn(async move {
         if let Err(e) = writer_task(writer, cmd_rx).await {
             error!("Writer task error: {e}");
         }
     });
 
     // 轮询任务
-    let state_p = state.clone();
-    let cmd_tx_p = cmd_tx.clone();
-    let poller_handle = tokio::spawn(async move {
-        poller_task(state_p, cmd_tx_p, poll_interval).await;
+    let h3 = handle.clone();
+    tokio::spawn(async move {
+        poller_task(h3, cmd_tx).await;
     });
-
-    // 等待任一任务退出
-    tokio::select! {
-        res = reader_handle => {
-            if let Err(e) = res { error!("Reader panic: {e}"); }
-        }
-        res = writer_handle => {
-            if let Err(e) = res { error!("Writer panic: {e}"); }
-        }
-        res = poller_handle => {
-            if let Err(e) = res { error!("Poller panic: {e}"); }
-        }
-    }
-
-    state.set_connected(false);
-    let _ = state.event_tx.send(crate::state::StateEvent::Error(
-        "串口已断开".to_string(),
-    ));
-    warn!("Serial port disconnected");
 }
 
 async fn reader_task(
     reader: tokio::io::ReadHalf<tokio_serial::SerialStream>,
-    state: Arc<AppState>,
+    handle: tauri::AppHandle,
+    state: SharedState,
 ) -> std::io::Result<()> {
     use tokio::io::AsyncReadExt;
 
@@ -104,10 +87,9 @@ async fn reader_task(
             ));
         }
 
-        let frames = codec.feed(&buf[..n]);
-        for frame_result in frames {
+        for frame_result in codec.feed(&buf[..n]) {
             match frame_result {
-                Ok(frame) => handler::handle_frame(&frame, &state),
+                Ok(frame) => handler::handle_frame(&frame, &handle, &state),
                 Err(e) => {
                     warn!("Protocol decode error: {e}");
                 }
@@ -124,42 +106,29 @@ async fn writer_task(
 
     let mut writer = writer;
     while let Some(data) = cmd_rx.recv().await {
-        if let Err(e) = writer.write_all(&data).await {
-            error!("Write error: {e}");
-            return Err(e);
-        }
+        writer.write_all(&data).await?;
     }
     Ok(())
 }
 
-async fn poller_task(
-    state: Arc<AppState>,
-    cmd_tx: mpsc::Sender<Vec<u8>>,
-    interval_ms: u64,
-) {
-    let mut tick = tokio::time::interval(tokio::time::Duration::from_millis(interval_ms));
+async fn poller_task(_handle: tauri::AppHandle, cmd_tx: mpsc::Sender<Vec<u8>>) {
+    let mut tick = tokio::time::interval(tokio::time::Duration::from_millis(250));
     let mut meter_tick = tokio::time::interval(tokio::time::Duration::from_millis(1000));
     let mut params_tick = tokio::time::interval(tokio::time::Duration::from_millis(2000));
 
     loop {
         tokio::select! {
             _ = tick.tick() => {
-                if state.is_connected() {
-                    let status_cmd = RadioCommand::StatusRequest.encode().encode();
-                    let _ = cmd_tx.send(status_cmd).await;
-                }
+                let cmd = RadioCommand::StatusRequest.encode().encode();
+                let _ = cmd_tx.send(cmd).await;
             }
             _ = meter_tick.tick() => {
-                if state.is_connected() {
-                    let meter_cmd = RadioCommand::MeterRequest.encode().encode();
-                    let _ = cmd_tx.send(meter_cmd).await;
-                }
+                let cmd = RadioCommand::MeterRequest.encode().encode();
+                let _ = cmd_tx.send(cmd).await;
             }
             _ = params_tick.tick() => {
-                if state.is_connected() {
-                    let params_cmd = RadioCommand::ParamsRequest.encode().encode();
-                    let _ = cmd_tx.send(params_cmd).await;
-                }
+                let cmd = RadioCommand::ParamsRequest.encode().encode();
+                let _ = cmd_tx.send(cmd).await;
             }
         }
     }
