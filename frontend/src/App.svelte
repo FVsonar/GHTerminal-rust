@@ -1,7 +1,7 @@
 <script>
   import './app.css';
   import { onMount, onDestroy } from 'svelte';
-  import { radioSocket } from './lib/ws.js';
+  import { onEvent, getStatus, getParams, getMeter } from './lib/tauri-bridge.js';
   import { radioStatus, radioParams, meterData, spectrumData, connectionStatus } from './lib/store.js';
 
   import ConnectionBar from './components/ConnectionBar.svelte';
@@ -20,39 +20,36 @@
   import SpectrumCanvas from './canvas/SpectrumCanvas.svelte';
   import WaterfallCanvas from './canvas/WaterfallCanvas.svelte';
 
-  let cleanup = null;
+  let unlisteners = [];
 
-  onMount(() => {
-    radioSocket.connect();
-    radioSocket.emit = (event, data) => {
-      switch (event) {
-        case 'connected':
-          connectionStatus.set({ connected: true, port: '', error: null });
-          break;
-        case 'disconnected':
-          connectionStatus.set({ connected: false, port: '', error: '连接断开' });
-          break;
-        case 'error':
-          connectionStatus.update(s => ({ ...s, error: data }));
-          break;
-        case 'status':
-          radioStatus.update(s => ({ ...s, ...data }));
-          break;
-        case 'params':
-          radioParams.update(s => ({ ...s, ...data }));
-          break;
-        case 'meter':
-          meterData.update(s => ({ ...s, ...data }));
-          break;
-        case 'spectrum':
-          spectrumData.set({ data: new Uint8Array(data), timestamp: Date.now() });
-          break;
-      }
-    };
+  onMount(async () => {
+    // 监听后端事件
+    unlisteners = [
+      onEvent('radio-status', (d) => radioStatus.update(s => ({ ...s, ...d }))),
+      onEvent('radio-params', (d) => radioParams.update(s => ({ ...s, ...d }))),
+      onEvent('meter-data', (d) => meterData.update(s => ({ ...s, ...d }))),
+      onEvent('spectrum-data', (d) => spectrumData.set({ data: new Uint8Array(d), timestamp: Date.now() })),
+      onEvent('radio-error', (d) => connectionStatus.update(s => ({ ...s, error: d }))),
+    ];
+
+    // 标记已连接 (Tauri IPC 就绪)
+    connectionStatus.set({ connected: true, port: '', error: null });
+
+    // 获取初始状态
+    try {
+      const status = await getStatus();
+      radioStatus.update(s => ({ ...s, ...status }));
+      const params = await getParams();
+      radioParams.update(s => ({ ...s, ...params }));
+      const meter = await getMeter();
+      meterData.update(s => ({ ...s, ...meter }));
+    } catch (e) {
+      console.warn('Failed to get initial state:', e);
+    }
   });
 
   onDestroy(() => {
-    radioSocket.close();
+    unlisteners.forEach(fn => fn());
   });
 </script>
 
@@ -64,7 +61,6 @@
   </header>
 
   <div class="main-content">
-    <!-- 频谱区域 -->
     <section class="spectrum-area">
       <div class="canvas-container" style="height: 150px;">
         <SpectrumCanvas />
@@ -75,47 +71,31 @@
       <SpectrumControls />
     </section>
 
-    <!-- 控制面板区域 -->
     <section class="controls-area">
       <div class="controls-grid">
-        <!-- 频率 & 模式 -->
         <div class="panel">
           <FrequencyControl />
           <ModeSelector />
           <PttButton />
         </div>
-
-        <!-- VFO -->
         <div class="panel">
           <VfoPanel />
         </div>
-
-        <!-- S 表 / 功率表 -->
         <div class="panel">
           <MeterDisplay />
         </div>
-
-        <!-- AF 音频 -->
         <div class="panel">
           <AudioControls />
         </div>
-
-        <!-- RF 射频 -->
         <div class="panel">
           <RfControls />
         </div>
-
-        <!-- NR/NB -->
         <div class="panel">
           <NrNbControls />
         </div>
-
-        <!-- 天调 -->
         <div class="panel">
           <TunerControl />
         </div>
-
-        <!-- CW -->
         <div class="panel">
           <CwControls />
         </div>
@@ -131,7 +111,6 @@
     height: 100vh;
     overflow: hidden;
   }
-
   .top-bar {
     display: flex;
     align-items: center;
@@ -141,21 +120,18 @@
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
   }
-
   .app-title {
     font-size: 16px;
     color: var(--accent);
     letter-spacing: 2px;
     white-space: nowrap;
   }
-
   .main-content {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
   }
-
   .spectrum-area {
     padding: 8px;
     display: flex;
@@ -163,13 +139,11 @@
     gap: 4px;
     flex-shrink: 0;
   }
-
   .controls-area {
     flex: 1;
     overflow-y: auto;
     padding: 8px;
   }
-
   .controls-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

@@ -1,5 +1,5 @@
 <script>
-  import { radioSocket } from '../lib/ws.js';
+  import { sendCommand } from '../lib/tauri-bridge.js';
   import { TUNER_MODES } from '../lib/radio-types.js';
 
   let tunerMode = $state(0);
@@ -11,7 +11,7 @@
     {#each TUNER_MODES as name, i}
       <button
         class:active={tunerMode === i}
-        onclick={() => { tunerMode = i; radioSocket.cmd('set_tuner', { mode: i }); }}
+        onclick={() => { tunerMode = i; sendCommand('set_tuner', { mode: i }); }}
       >
         {name}
       </button>

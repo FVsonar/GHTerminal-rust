@@ -1,5 +1,5 @@
 <script>
-  import { radioSocket } from '../lib/ws.js';
+  import { sendCommand } from '../lib/tauri-bridge.js';
   import { radioStatus } from '../lib/store.js';
 
   let s = $derived($radioStatus);
@@ -13,7 +13,7 @@
   function setFrequency() {
     const mhz = parseFloat(freqInput);
     if (isNaN(mhz) || mhz <= 0 || mhz > 2000) return;
-    radioSocket.cmd('set_frequency', { freq: Math.round(mhz * 1000000) });
+    sendCommand('set_frequency', { freq: Math.round(mhz * 1000000) });
   }
 
   function onKeydown(e) {
