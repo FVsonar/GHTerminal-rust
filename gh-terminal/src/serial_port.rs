@@ -35,6 +35,10 @@ pub async fn run_with_port(
                 let mut port = read_port.lock().unwrap();
                 match port.read(&mut buf) {
                     Ok(n) => n,
+                    Err(ref e) if e.kind() == std::io::ErrorKind::TimedOut => {
+                        // 超时很正常，继续等待数据
+                        continue;
+                    }
                     Err(e) => {
                         error!("Serial read error: {e}");
                         let _ = read_handle.emit("serial-status", serde_json::json!({"connected": false, "port": ""}));
@@ -43,9 +47,7 @@ pub async fn run_with_port(
                 }
             };
             if n == 0 {
-                let _ = read_handle.emit("serial-status", serde_json::json!({"connected": false, "port": ""}));
-                error!("Serial port closed (EOF)");
-                return;
+                continue; // 空读也跳过
             }
             for frame_result in codec.feed(&buf[..n]) {
                 match frame_result {

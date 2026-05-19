@@ -48,7 +48,7 @@ pub async fn connect_serial(
         .stop_bits(serialport::StopBits::One)
         .parity(serialport::Parity::None)
         .flow_control(serialport::FlowControl::None)
-        .timeout(std::time::Duration::from_millis(100))
+        .timeout(std::time::Duration::from_millis(50))
         .open()
         .map_err(|e| format!("无法打开串口 {}: {}", port, e))?;
 
