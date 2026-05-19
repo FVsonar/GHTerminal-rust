@@ -1,6 +1,8 @@
+use std::io::Read;
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
 use tauri::Emitter;
 use tokio::sync::mpsc;
-use tokio_serial::SerialStream;
 use tracing::{error, warn};
 
 use gh_protocol::{Codec, RadioCommand};
@@ -11,10 +13,10 @@ use crate::state::SharedState;
 pub async fn run_with_port(
     handle: tauri::AppHandle,
     state: SharedState,
-    port: SerialStream,
+    port: Box<dyn serialport::SerialPort>,
 ) {
-    let (reader, writer) = tokio::io::split(port);
-    let (cmd_tx, cmd_rx) = mpsc::channel::<Vec<u8>>(32);
+    let shared_port = Arc::new(Mutex::new(port));
+    let (cmd_tx, mut cmd_rx) = mpsc::channel::<Vec<u8>>(32);
 
     {
         let mut tx = state.cmd_tx.lock().await;
@@ -22,18 +24,47 @@ pub async fn run_with_port(
     }
 
     // 读任务
-    let h1 = handle.clone();
-    let s1 = state.clone();
-    tokio::spawn(async move {
-        if let Err(e) = reader_task(reader, h1, s1).await {
-            error!("Reader task error: {e}");
+    let read_handle = handle.clone();
+    let read_state = state.clone();
+    let read_port = shared_port.clone();
+    tokio::task::spawn_blocking(move || {
+        let mut codec = Codec::new();
+        let mut buf = [0u8; 512];
+        loop {
+            let n = {
+                let mut port = read_port.lock().unwrap();
+                match port.read(&mut buf) {
+                    Ok(n) => n,
+                    Err(e) => {
+                        error!("Serial read error: {e}");
+                        let _ = read_handle.emit("serial-status", serde_json::json!({"connected": false, "port": ""}));
+                        return;
+                    }
+                }
+            };
+            if n == 0 {
+                let _ = read_handle.emit("serial-status", serde_json::json!({"connected": false, "port": ""}));
+                error!("Serial port closed (EOF)");
+                return;
+            }
+            for frame_result in codec.feed(&buf[..n]) {
+                match frame_result {
+                    Ok(frame) => handler::handle_frame(&frame, &read_handle, &read_state),
+                    Err(e) => warn!("Protocol decode error: {e}"),
+                }
+            }
         }
     });
 
-    // 写任务
+    // 写桥接: async cmd_rx → blocking write
+    let write_port = shared_port.clone();
     tokio::spawn(async move {
-        if let Err(e) = writer_task(writer, cmd_rx).await {
-            error!("Writer task error: {e}");
+        while let Some(data) = cmd_rx.recv().await {
+            let mut port = write_port.lock().unwrap();
+            if let Err(e) = port.write_all(&data) {
+                error!("Serial write error: {e}");
+                break;
+            }
         }
     });
 
@@ -43,55 +74,10 @@ pub async fn run_with_port(
     });
 }
 
-async fn reader_task(
-    reader: tokio::io::ReadHalf<SerialStream>,
-    handle: tauri::AppHandle,
-    state: SharedState,
-) -> std::io::Result<()> {
-    use tokio::io::AsyncReadExt;
-
-    let mut reader = reader;
-    let mut codec = Codec::new();
-    let mut buf = [0u8; 512];
-
-    loop {
-        let n = reader.read(&mut buf).await?;
-        if n == 0 {
-            let _ = handle.emit("serial-status", serde_json::json!({"connected": false, "port": ""}));
-            return Err(std::io::Error::new(
-                std::io::ErrorKind::UnexpectedEof,
-                "serial port closed",
-            ));
-        }
-
-        for frame_result in codec.feed(&buf[..n]) {
-            match frame_result {
-                Ok(frame) => handler::handle_frame(&frame, &handle, &state),
-                Err(e) => {
-                    warn!("Protocol decode error: {e}");
-                }
-            }
-        }
-    }
-}
-
-async fn writer_task(
-    writer: tokio::io::WriteHalf<SerialStream>,
-    mut cmd_rx: mpsc::Receiver<Vec<u8>>,
-) -> std::io::Result<()> {
-    use tokio::io::AsyncWriteExt;
-
-    let mut writer = writer;
-    while let Some(data) = cmd_rx.recv().await {
-        writer.write_all(&data).await?;
-    }
-    Ok(())
-}
-
 async fn poller_task(_handle: tauri::AppHandle, cmd_tx: mpsc::Sender<Vec<u8>>) {
-    let mut tick = tokio::time::interval(tokio::time::Duration::from_millis(250));
-    let mut meter_tick = tokio::time::interval(tokio::time::Duration::from_millis(1000));
-    let mut params_tick = tokio::time::interval(tokio::time::Duration::from_millis(2000));
+    let mut tick = tokio::time::interval(Duration::from_millis(250));
+    let mut meter_tick = tokio::time::interval(Duration::from_millis(1000));
+    let mut params_tick = tokio::time::interval(Duration::from_millis(2000));
 
     loop {
         tokio::select! {

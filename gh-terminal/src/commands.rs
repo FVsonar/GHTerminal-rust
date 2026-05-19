@@ -2,7 +2,6 @@ use std::sync::Arc;
 use serde::Serialize;
 use serde_json::Value;
 use tauri::{Emitter, State};
-use tokio_serial::SerialPortBuilderExt;
 use tracing::{info, warn};
 
 use gh_protocol::RadioCommand;
@@ -43,13 +42,14 @@ pub async fn connect_serial(
         info!("Disconnected previous serial connection");
     }
 
-    // 先尝试打开端口 (验证可用性)
-    let serial_port = tokio_serial::new(&port, baud)
-        .data_bits(tokio_serial::DataBits::Eight)
-        .stop_bits(tokio_serial::StopBits::One)
-        .parity(tokio_serial::Parity::None)
-        .flow_control(tokio_serial::FlowControl::None)
-        .open_native_async()
+    // 用 blocking 模式打开 (兼容性更好, 避免异步IO驱动问题)
+    let serial_port = serialport::new(&port, baud)
+        .data_bits(serialport::DataBits::Eight)
+        .stop_bits(serialport::StopBits::One)
+        .parity(serialport::Parity::None)
+        .flow_control(serialport::FlowControl::None)
+        .timeout(std::time::Duration::from_millis(100))
+        .open()
         .map_err(|e| format!("无法打开串口 {}: {}", port, e))?;
 
     info!("Serial port {} opened successfully", port);
