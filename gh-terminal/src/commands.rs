@@ -229,10 +229,15 @@ fn parse_command(cmd: &str, d: &Value) -> Option<RadioCommand> {
 pub async fn send_command(cmd: String, data: Value, state: State<'_, Arc<AppState>>) -> Result<(), String> {
     let radio_cmd = parse_command(&cmd, &data).ok_or_else(|| format!("Invalid command: {cmd}"))?;
     let bytes = radio_cmd.encode().encode();
+    let hex: String = bytes.iter().map(|b| format!("{b:02X}")).collect::<Vec<_>>().join(" ");
+    info!("CMD from UI: {cmd} → {hex}");
 
     let tx_guard = state.cmd_tx.lock().await;
     if let Some(tx) = tx_guard.as_ref() {
         tx.send(bytes).await.map_err(|e| e.to_string())?;
+        info!("CMD sent to serial queue");
+    } else {
+        warn!("No serial connection, dropping command: {cmd}");
     }
     Ok(())
 }
