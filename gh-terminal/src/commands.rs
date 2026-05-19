@@ -80,6 +80,8 @@ pub async fn connect_serial(
 pub async fn disconnect_serial(state: State<'_, Arc<AppState>>) -> Result<(), String> {
     if let Some(handle) = state.serial_abort.lock().await.take() {
         handle.abort();
+        // 等待 spawned tasks 释放串口句柄
+        tokio::time::sleep(std::time::Duration::from_millis(200)).await;
         *state.connected.lock().await = false;
         *state.cmd_tx.lock().await = None;
         info!("Serial disconnected");
