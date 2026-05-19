@@ -1,5 +1,5 @@
 use crate::error::ProtocolError;
-use crate::packet::{self, CommandPacket, Frame, SpectrumPacket, HEADER_COMMAND, HEADER_LEN, HEADER_SPECTRUM};
+use crate::packet::{CommandPacket, Frame, SpectrumPacket, HEADER_COMMAND, HEADER_LEN, HEADER_SPECTRUM};
 
 /// 帧解码状态机 — 处理连续字节流中的粘包/半包
 #[derive(Debug, Clone)]
@@ -78,13 +78,18 @@ impl Codec {
     }
 
     fn decode_command(&mut self) -> Result<Option<Frame>, ProtocolError> {
-        // 需要至少 header + length_byte + cmd + crc
-        if self.buf.len() < HEADER_LEN + 1 + 1 + packet::CRC_LEN {
+        // 至少需要 header(4) + len(1) = 5 bytes
+        if self.buf.len() < HEADER_LEN + 1 {
             return Ok(None);
         }
 
+        // 包长包含 cmd+data+crc, 最小为 3 (cmd=1 + crc=2)
         let payload_len = self.buf[HEADER_LEN] as usize;
-        let total = HEADER_LEN + 1 + payload_len + packet::CRC_LEN;
+        if payload_len < 3 {
+            return Ok(None);
+        }
+
+        let total = HEADER_LEN + 1 + payload_len;
 
         if self.buf.len() < total {
             return Ok(None);
