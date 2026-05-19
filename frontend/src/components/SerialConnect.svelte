@@ -42,8 +42,11 @@
     errorMsg = '';
     try {
       await invoke('connect_serial', { port: selectedPort, baud: selectedBaud });
+      // 直接设置状态，不等待事件
+      connectionStatus.set({ connected: true, port: selectedPort, error: null });
     } catch (e) {
       errorMsg = '连接失败: ' + e;
+      connectionStatus.set({ connected: false, port: selectedPort, error: String(e) });
     } finally {
       connecting = false;
     }
@@ -55,6 +58,7 @@
     } catch (e) {
       console.error('Disconnect failed:', e);
     }
+    connectionStatus.set({ connected: false, port: '', error: null });
   }
 
   let status = $derived($connectionStatus);
