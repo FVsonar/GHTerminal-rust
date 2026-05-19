@@ -80,33 +80,42 @@ pub async fn run_with_port(
 
     // 轮询任务
     tokio::spawn(async move {
-        poller_task(handle, cmd_tx).await;
+        poller_task(handle, state, cmd_tx).await;
     });
 }
 
-async fn poller_task(_handle: tauri::AppHandle, cmd_tx: mpsc::Sender<Vec<u8>>) {
+async fn poller_task(_handle: tauri::AppHandle, state: SharedState, cmd_tx: mpsc::Sender<Vec<u8>>) {
     let mut tick = tokio::time::interval(Duration::from_millis(250));
     let mut meter_tick = tokio::time::interval(Duration::from_millis(1000));
     let mut params_tick = tokio::time::interval(Duration::from_millis(2000));
     let mut spectrum_tick = tokio::time::interval(Duration::from_millis(80));
 
     loop {
+        let poll = state.poll_state.lock().await.clone();
         tokio::select! {
             _ = tick.tick() => {
-                let cmd = RadioCommand::StatusRequest.encode().encode();
-                let _ = cmd_tx.send(cmd).await;
+                if poll.status {
+                    let cmd = RadioCommand::StatusRequest.encode().encode();
+                    let _ = cmd_tx.send(cmd).await;
+                }
             }
             _ = meter_tick.tick() => {
-                let cmd = RadioCommand::MeterRequest.encode().encode();
-                let _ = cmd_tx.send(cmd).await;
+                if poll.meter {
+                    let cmd = RadioCommand::MeterRequest.encode().encode();
+                    let _ = cmd_tx.send(cmd).await;
+                }
             }
             _ = params_tick.tick() => {
-                let cmd = RadioCommand::ParamsRequest.encode().encode();
-                let _ = cmd_tx.send(cmd).await;
+                if poll.params {
+                    let cmd = RadioCommand::ParamsRequest.encode().encode();
+                    let _ = cmd_tx.send(cmd).await;
+                }
             }
             _ = spectrum_tick.tick() => {
-                let cmd = RadioCommand::SpectrumRequest.encode().encode();
-                let _ = cmd_tx.send(cmd).await;
+                if poll.spectrum {
+                    let cmd = RadioCommand::SpectrumRequest.encode().encode();
+                    let _ = cmd_tx.send(cmd).await;
+                }
             }
         }
     }
