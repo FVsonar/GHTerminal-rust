@@ -21,7 +21,6 @@
   import WaterfallCanvas from './canvas/WaterfallCanvas.svelte';
 
   let unlisteners = [];
-  let conn = $derived($connectionStatus);
 
   onMount(() => {
     Promise.all([
@@ -37,7 +36,7 @@
 </script>
 
 <!-- 未连接遮罩 -->
-{#if !conn.connected}
+{#if !$connectionStatus.connected}
   <SerialConnect />
 {/if}
 
@@ -48,17 +47,17 @@
       <div class="logo-dot"></div>
       <span class="logo-text">GH-Terminal</span>
     </div>
-    {#if conn.connected}
+    {#if $connectionStatus.connected}
       <StatusBar />
     {/if}
     <div class="header-right">
-      {#if conn.connected}
+      {#if $connectionStatus.connected}
         <SerialConnect />
       {/if}
     </div>
   </header>
 
-  {#if conn.connected}
+  {#if $connectionStatus.connected}
     <div class="main-area">
       <!-- 仪表行 -->
       <div class="meter-row">
