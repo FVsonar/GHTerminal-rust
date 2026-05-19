@@ -6,16 +6,12 @@ use tracing::{error, info, warn};
 use gh_protocol::{Codec, RadioCommand};
 
 use crate::handler;
-use crate::state::SharedState;
+use crate::state::{SerialConfig, SharedState};
 
-pub async fn run(handle: tauri::AppHandle, state: SharedState) {
-    // 从 Tauri 资源或环境读取端口配置，此处提供默认值
-    let port_name = "COM3";
-    let baud_rate = 115200;
+pub async fn run_with(handle: tauri::AppHandle, state: SharedState, config: SerialConfig) {
+    info!("Opening serial port {} at {} baud", config.port, config.baud_rate);
 
-    info!("Opening serial port {port_name} at {baud_rate} baud");
-
-    let port = match tokio_serial::new(port_name, baud_rate)
+    let port = match tokio_serial::new(&config.port, config.baud_rate)
         .data_bits(tokio_serial::DataBits::Eight)
         .stop_bits(tokio_serial::StopBits::One)
         .parity(tokio_serial::Parity::None)
@@ -24,17 +20,15 @@ pub async fn run(handle: tauri::AppHandle, state: SharedState) {
     {
         Ok(p) => p,
         Err(e) => {
-            error!("Failed to open serial port {port_name}: {e}");
+            error!("Failed to open serial port {}: {}", config.port, e);
             let _ = handle.emit("radio-error", format!("串口打开失败: {e}"));
+            let _ = handle.emit("serial-status", serde_json::json!({"connected": false, "port": config.port}));
             return;
         }
     };
 
-    info!("Serial port opened");
-    {
-        let mut c = state.connected.lock().await;
-        *c = true;
-    }
+    info!("Serial port {} opened", config.port);
+    let _ = handle.emit("serial-status", serde_json::json!({"connected": true, "port": config.port}));
 
     let (reader, writer) = tokio::io::split(port);
     let (cmd_tx, cmd_rx) = mpsc::channel::<Vec<u8>>(32);
@@ -61,9 +55,8 @@ pub async fn run(handle: tauri::AppHandle, state: SharedState) {
     });
 
     // 轮询任务
-    let h3 = handle.clone();
     tokio::spawn(async move {
-        poller_task(h3, cmd_tx).await;
+        poller_task(handle, cmd_tx).await;
     });
 }
 
@@ -81,6 +74,7 @@ async fn reader_task(
     loop {
         let n = reader.read(&mut buf).await?;
         if n == 0 {
+            let _ = handle.emit("serial-status", serde_json::json!({"connected": false, "port": ""}));
             return Err(std::io::Error::new(
                 std::io::ErrorKind::UnexpectedEof,
                 "serial port closed",

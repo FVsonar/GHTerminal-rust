@@ -1,7 +1,14 @@
 use std::collections::VecDeque;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Mutex};
+use tokio::task::JoinHandle;
 use serde::Serialize;
+
+#[derive(Debug, Clone)]
+pub struct SerialConfig {
+    pub port: String,
+    pub baud_rate: u32,
+}
 
 /// 前端事件数据结构
 #[derive(Debug, Clone, Serialize)]
@@ -102,6 +109,8 @@ pub struct AppState {
     pub spectrum: Mutex<SpectrumBuffer>,
     pub connected: Mutex<bool>,
     pub cmd_tx: Mutex<Option<mpsc::Sender<Vec<u8>>>>,
+    pub serial_config: Mutex<Option<SerialConfig>>,
+    pub serial_abort: Mutex<Option<JoinHandle<()>>>,
 }
 
 pub struct SpectrumBuffer {
@@ -127,6 +136,8 @@ impl AppState {
             spectrum: Mutex::new(SpectrumBuffer::default()),
             connected: Mutex::new(false),
             cmd_tx: Mutex::new(None),
+            serial_config: Mutex::new(None),
+            serial_abort: Mutex::new(None),
         }
     }
 }

@@ -1,11 +1,79 @@
+use serde::Serialize;
 use serde_json::Value;
 use tauri::State;
-use tracing::warn;
+use tracing::{info, warn};
 
 use gh_protocol::RadioCommand;
 use gh_protocol::types::*;
 
-use crate::state::{AppState, RadioStatus, RadioParams, MeterData};
+use crate::state::{AppState, RadioStatus, RadioParams, MeterData, SerialConfig};
+
+#[derive(Debug, Serialize)]
+pub struct SerialPortInfo {
+    pub name: String,
+    pub description: String,
+}
+
+#[tauri::command]
+pub async fn list_serial_ports() -> Result<Vec<SerialPortInfo>, String> {
+    match serialport::available_ports() {
+        Ok(ports) => Ok(ports
+            .into_iter()
+            .map(|p| SerialPortInfo {
+                name: p.port_name.clone(),
+                description: format!("{:?}", p.port_type),
+            })
+            .collect()),
+        Err(e) => Err(format!("无法枚举串口: {e}")),
+    }
+}
+
+#[tauri::command]
+pub async fn connect_serial(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+    port: String,
+    baud: u32,
+) -> Result<(), String> {
+    // 先断开已有连接
+    if let Some(handle) = state.serial_abort.lock().await.take() {
+        handle.abort();
+        info!("Disconnected previous serial connection");
+    }
+
+    let config = SerialConfig {
+        port: port.clone(),
+        baud_rate: baud,
+    };
+
+    // 保存配置
+    *state.serial_config.lock().await = Some(config.clone());
+
+    // 标记连接中
+    *state.connected.lock().await = true;
+
+    let app_handle = app.clone();
+    let shared_state = crate::get_app_state().clone();
+    let abort_handle = tokio::spawn(async move {
+        crate::serial_port::run_with(app_handle, shared_state, config).await;
+    });
+
+    *state.serial_abort.lock().await = Some(abort_handle);
+
+    info!("Connecting to {} at {} baud", port, baud);
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn disconnect_serial(state: State<'_, AppState>) -> Result<(), String> {
+    if let Some(handle) = state.serial_abort.lock().await.take() {
+        handle.abort();
+        *state.connected.lock().await = false;
+        *state.cmd_tx.lock().await = None;
+        info!("Serial disconnected");
+    }
+    Ok(())
+}
 
 fn parse_command(cmd: &str, d: &Value) -> Option<RadioCommand> {
     Some(match cmd {
