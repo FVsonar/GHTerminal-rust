@@ -21,16 +21,11 @@
     {/each}
   </div>
 
-  <Slider label="侧音音量" value={sidetoneVol} min={0} max={15}
-    onchange={(v) => { sidetoneVol = v; sendCommand('set_sidetone_vol', { vol: v }); }} />
-  <Slider label="侧音频率" value={sidetoneFreq} min={40} max={200}
-    onchange={(v) => { sidetoneFreq = v; sendCommand('set_sidetone_freq', { freq: v }); }} />
-  <Slider label="收发延时" value={txDelay} min={0} max={50}
-    onchange={(v) => { txDelay = v; sendCommand('set_txrx_delay', { delay: v }); }} />
-  <Slider label="自动键速" value={keySpeed} min={5} max={48}
-    onchange={(v) => { keySpeed = v; sendCommand('set_key_speed', { speed: v }); }} />
-  <Slider label="解码阈值" value={cwDecodeThr} min={1} max={50}
-    onchange={(v) => { cwDecodeThr = v; sendCommand('set_cw_decode_threshold', { value: v }); }} />
+  {@render slider("侧音音量", sidetoneVol, 0, 15, (v) => { sidetoneVol = v; sendCommand('set_sidetone_vol', { vol: v }); })}
+  {@render slider("侧音频率", sidetoneFreq, 40, 200, (v) => { sidetoneFreq = v; sendCommand('set_sidetone_freq', { freq: v }); })}
+  {@render slider("收发延时", txDelay, 0, 50, (v) => { txDelay = v; sendCommand('set_txrx_delay', { delay: v }); })}
+  {@render slider("自动键速", keySpeed, 5, 48, (v) => { keySpeed = v; sendCommand('set_key_speed', { speed: v }); })}
+  {@render slider("解码阈值", cwDecodeThr, 1, 50, (v) => { cwDecodeThr = v; sendCommand('set_cw_decode_threshold', { value: v }); })}
 
   <div class="flex-row" style="margin-top:4px;">
     <button class:active={cwTraining} onclick={() => { cwTraining = !cwTraining; sendCommand('set_cw_training', { on: cwTraining }); }} style="flex:1;">
@@ -42,7 +37,13 @@
   </div>
 </div>
 
-{#snippet Slider(s)}<div class="slider-row"><label>{s.label}</label><span class="slider-val">{s.value}</span><input type="range" min={s.min} max={s.max} value={s.value} oninput={(e) => s.onchange(parseInt(e.target.value))} /></div>{/snippet}
+{#snippet slider(label, value, min, max, onChange)}
+<div class="slider-row">
+  <label>{label}</label>
+  <span class="slider-val">{value}</span>
+  <input type="range" {min} {max} {value} oninput={(e) => onChange(parseInt(e.target.value))} />
+</div>
+{/snippet}
 
 <style>
   .slider-row { margin-bottom: 2px; }

@@ -16,12 +16,18 @@
     </button>
   </div>
 
-  <Slider label="NR阀值" value={p.nr || 0} min={1} max={200} onchange={(v) => sendCommand('set_nr_threshold', { value: v })} />
-  <Slider label="NB阀值" value={p.nb || 0} min={0} max={15} onchange={(v) => sendCommand('set_nb_threshold', { value: v })} />
-  <Slider label="PEAK" value={p.pk} min={0} max={20} onchange={(v) => sendCommand('set_peak_threshold', { value: v })} />
+  {@render slider("NR阀值", p.nr || 0, 1, 200, (v) => sendCommand('set_nr_threshold', { value: v }))}
+  {@render slider("NB阀值", p.nb || 0, 0, 15, (v) => sendCommand('set_nb_threshold', { value: v }))}
+  {@render slider("PEAK", p.pk, 0, 20, (v) => sendCommand('set_peak_threshold', { value: v }))}
 </div>
 
-{#snippet Slider(s)}<div class="slider-row"><label>{s.label}</label><span class="slider-val">{s.value}</span><input type="range" min={s.min} max={s.max} value={s.value} oninput={(e) => s.onchange(parseInt(e.target.value))} /></div>{/snippet}
+{#snippet slider(label, value, min, max, onChange)}
+<div class="slider-row">
+  <label>{label}</label>
+  <span class="slider-val">{value}</span>
+  <input type="range" {min} {max} {value} oninput={(e) => onChange(parseInt(e.target.value))} />
+</div>
+{/snippet}
 
 <style>
   .slider-row { margin-bottom: 2px; }

@@ -6,15 +6,21 @@
 
 <div class="panel">
   <div class="panel-title">AF 音频</div>
-  <Slider label="扬声器" value={p.sv} min={0} max={30} onchange={(v) => sendCommand('set_speaker_vol', { vol: v })} />
-  <Slider label="耳机" value={p.hv} min={0} max={80} onchange={(v) => sendCommand('set_headphone_vol', { vol: v })} />
-  <Slider label="MIC增益" value={p.mg} min={0} max={100} onchange={(v) => sendCommand('set_mic_gain', { gain: v })} />
-  <Slider label="压扩比" value={p.cmp} min={0} max={14} onchange={(v) => sendCommand('set_compandor', { ratio: v })} />
-  <Slider label="低音EQ" value={p.bass} min={0} max={40} onchange={(v) => sendCommand('set_bass_eq', { value: v })} />
-  <Slider label="高音EQ" value={p.treb} min={0} max={40} onchange={(v) => sendCommand('set_treble_eq', { value: v })} />
+  {@render slider("扬声器", p.sv, 0, 30, (v) => sendCommand('set_speaker_vol', { vol: v }))}
+  {@render slider("耳机", p.hv, 0, 80, (v) => sendCommand('set_headphone_vol', { vol: v }))}
+  {@render slider("MIC增益", p.mg, 0, 100, (v) => sendCommand('set_mic_gain', { gain: v }))}
+  {@render slider("压扩比", p.cmp, 0, 14, (v) => sendCommand('set_compandor', { ratio: v }))}
+  {@render slider("低音EQ", p.bass, 0, 40, (v) => sendCommand('set_bass_eq', { value: v }))}
+  {@render slider("高音EQ", p.treb, 0, 40, (v) => sendCommand('set_treble_eq', { value: v }))}
 </div>
 
-{#snippet Slider(s)}<div class="slider-row"><label>{s.label}</label><span class="slider-val">{s.value}</span><input type="range" min={s.min} max={s.max} value={s.value} oninput={(e) => s.onchange(parseInt(e.target.value))} /></div>{/snippet}
+{#snippet slider(label, value, min, max, onChange)}
+<div class="slider-row">
+  <label>{label}</label>
+  <span class="slider-val">{value}</span>
+  <input type="range" {min} {max} {value} oninput={(e) => onChange(parseInt(e.target.value))} />
+</div>
+{/snippet}
 
 <style>
   .slider-row { margin-bottom: 2px; }
