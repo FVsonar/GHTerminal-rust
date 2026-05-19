@@ -54,15 +54,15 @@
       imgRow.data[idx + 3] = 255;
     }
 
-    historyRows.push(imgRow);
-    if (historyRows.length > height) historyRows.shift();
+    // 新数据从顶部插入，旧数据向下滚动
+    historyRows.unshift(imgRow);
+    if (historyRows.length > height) historyRows.pop();
     drawWaterfall();
   }
 
   function drawWaterfall() {
     for (let i = 0; i < historyRows.length; i++) {
-      const y = height - historyRows.length + i;
-      ctx.putImageData(historyRows[i], 0, y);
+      ctx.putImageData(historyRows[i], 0, i);
     }
   }
 </script>
