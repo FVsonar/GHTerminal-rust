@@ -4,7 +4,7 @@
   import { onEvent, getStatus, getParams, getMeter } from './lib/tauri-bridge.js';
   import { radioStatus, radioParams, meterData, spectrumData, connectionStatus } from './lib/store.js';
 
-  import ConnectionBar from './components/ConnectionBar.svelte';
+  import SerialConnect from './components/SerialConnect.svelte';
   import StatusBar from './components/StatusBar.svelte';
   import FrequencyControl from './components/FrequencyControl.svelte';
   import ModeSelector from './components/ModeSelector.svelte';
@@ -22,8 +22,7 @@
 
   let unlisteners = [];
 
-  onMount(async () => {
-    // 监听后端事件
+  onMount(() => {
     unlisteners = [
       onEvent('radio-status', (d) => radioStatus.update(s => ({ ...s, ...d }))),
       onEvent('radio-params', (d) => radioParams.update(s => ({ ...s, ...d }))),
@@ -31,21 +30,6 @@
       onEvent('spectrum-data', (d) => spectrumData.set({ data: new Uint8Array(d), timestamp: Date.now() })),
       onEvent('radio-error', (d) => connectionStatus.update(s => ({ ...s, error: d }))),
     ];
-
-    // 标记已连接 (Tauri IPC 就绪)
-    connectionStatus.set({ connected: true, port: '', error: null });
-
-    // 获取初始状态
-    try {
-      const status = await getStatus();
-      radioStatus.update(s => ({ ...s, ...status }));
-      const params = await getParams();
-      radioParams.update(s => ({ ...s, ...params }));
-      const meter = await getMeter();
-      meterData.update(s => ({ ...s, ...meter }));
-    } catch (e) {
-      console.warn('Failed to get initial state:', e);
-    }
   });
 
   onDestroy(() => {
@@ -57,7 +41,8 @@
   <header class="top-bar">
     <h1 class="app-title">GH-Terminal</h1>
     <StatusBar />
-    <ConnectionBar />
+    <div style="margin-left:auto;"></div>
+    <SerialConnect />
   </header>
 
   <div class="main-content">

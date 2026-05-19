@@ -5,10 +5,16 @@ mod handler;
 mod serial_port;
 mod state;
 
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 use tracing::info;
 
 use crate::state::AppState;
+
+static APP_STATE: OnceLock<Arc<AppState>> = OnceLock::new();
+
+pub fn get_app_state() -> &'static Arc<AppState> {
+    APP_STATE.get().expect("APP_STATE not initialized")
+}
 
 fn main() {
     tracing_subscriber::fmt()
@@ -18,20 +24,14 @@ fn main() {
     info!("Starting GH-Terminal...");
 
     let app_state = Arc::new(AppState::new());
+    let _ = APP_STATE.set(app_state.clone());
 
     tauri::Builder::default()
-        .manage(app_state.clone())
-        .setup(move |app| {
-            let handle = app.handle().clone();
-            let state = app_state.clone();
-
-            tauri::async_runtime::spawn(async move {
-                serial_port::run(handle, state).await;
-            });
-
-            Ok(())
-        })
+        .manage(app_state)
         .invoke_handler(tauri::generate_handler![
+            commands::list_serial_ports,
+            commands::connect_serial,
+            commands::disconnect_serial,
             commands::send_command,
             commands::get_status,
             commands::get_params,
