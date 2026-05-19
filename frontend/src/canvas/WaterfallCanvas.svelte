@@ -16,7 +16,7 @@
   });
 
   function resetCanvas() {
-    ctx.fillStyle = '#000510';
+    ctx.fillStyle = '#020810';
     ctx.fillRect(0, 0, width, height);
   }
 
@@ -27,12 +27,30 @@
 
     for (let x = 0; x < width; x++) {
       const dataIdx = Math.floor((x / width) * len);
-      const val = data[dataIdx] / 255;
+      const v = data[dataIdx] / 255; // 0..1
       const idx = x * 4;
-      // 冷色渐变映射: 黑 → 深蓝 → 青蓝 → 青绿
-      imgRow.data[idx] = Math.floor(val * val * 80);      // R
-      imgRow.data[idx + 1] = Math.floor(val * 120);         // G
-      imgRow.data[idx + 2] = Math.floor(20 + val * 160);    // B
+
+      // 热力渐变: 黑→深蓝→青→黄→白
+      if (v < 0.25) {
+        imgRow.data[idx] = 0;
+        imgRow.data[idx + 1] = Math.floor(v * 4 * 60);
+        imgRow.data[idx + 2] = Math.floor(40 + v * 4 * 200);
+      } else if (v < 0.5) {
+        const t = (v - 0.25) * 4;
+        imgRow.data[idx] = Math.floor(t * 60);
+        imgRow.data[idx + 1] = Math.floor(60 + t * 200);
+        imgRow.data[idx + 2] = Math.floor(240 - t * 140);
+      } else if (v < 0.75) {
+        const t = (v - 0.5) * 4;
+        imgRow.data[idx] = Math.floor(60 + t * 195);
+        imgRow.data[idx + 1] = Math.floor(255 - t * 60);
+        imgRow.data[idx + 2] = Math.floor(100 - t * 100);
+      } else {
+        const t = (v - 0.75) * 4;
+        imgRow.data[idx] = Math.floor(255);
+        imgRow.data[idx + 1] = Math.floor(200 + t * 55);
+        imgRow.data[idx + 2] = Math.min(255, Math.floor(t * 400));
+      }
       imgRow.data[idx + 3] = 255;
     }
 
