@@ -47,11 +47,17 @@ pub async fn run_with_port(
                 }
             };
             if n == 0 {
-                continue; // 空读也跳过
+                continue;
             }
+            // 打印收到的原始字节
+            let hex: String = buf[..n].iter().map(|b| format!("{b:02X}")).collect::<Vec<_>>().join(" ");
+            tracing::info!("RAW [{n}]: {hex}");
             for frame_result in codec.feed(&buf[..n]) {
                 match frame_result {
-                    Ok(frame) => handler::handle_frame(&frame, &read_handle, &read_state),
+                    Ok(frame) => {
+                        tracing::info!("Decoded frame: {frame:?}");
+                        handler::handle_frame(&frame, &read_handle, &read_state)
+                    }
                     Err(e) => warn!("Protocol decode error: {e}"),
                 }
             }
