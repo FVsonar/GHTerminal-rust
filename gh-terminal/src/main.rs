@@ -25,7 +25,7 @@ fn main() {
             let handle = app.handle().clone();
             let state = app_state.clone();
 
-            tokio::spawn(async move {
+            tauri::async_runtime::spawn(async move {
                 serial_port::run(handle, state).await;
             });
 
