@@ -110,11 +110,13 @@ pub struct PollState {
     pub meter: bool,
     pub params: bool,
     pub spectrum: bool,
+    pub cw: bool,
+    pub channel: bool,
 }
 
 impl Default for PollState {
     fn default() -> Self {
-        Self { status: true, meter: true, params: true, spectrum: true }
+        Self { status: true, meter: true, params: true, spectrum: true, cw: true, channel: true }
     }
 }
 
