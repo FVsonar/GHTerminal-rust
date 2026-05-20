@@ -70,40 +70,40 @@
 </script>
 
 <div class="card bg-base-200 border border-base-300 shadow-sm p-3">
-  <span class="text-[10px] font-semibold text-base-content/50 uppercase tracking-widest mb-2.5 block">信道管理 (0-999)</span>
+  <span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest mb-2.5 block">信道管理 (0-999)</span>
 
   <div class="flex items-end gap-2 mb-2.5">
     <div class="flex items-end gap-1.5 flex-1">
       <div>
-        <span class="text-[9px] text-base-content/50 block mb-0.5">模式</span>
+        <span class="text-[13px] text-base-content/50 block mb-0.5">模式</span>
         <div class="flex gap-1">
-          <button class="btn btn-xs text-[11px] {chMode===0?'btn-primary':'btn-ghost'}" onclick={()=>setMode(0)}>VFO</button>
-          <button class="btn btn-xs text-[11px] {chMode===1?'btn-primary':'btn-ghost'}" onclick={()=>setMode(1)}>信道</button>
+          <button class="btn btn-sm text-[13px] {chMode===0?'btn-primary':'btn-ghost'}" onclick={()=>setMode(0)}>VFO</button>
+          <button class="btn btn-sm text-[13px] {chMode===1?'btn-primary':'btn-ghost'}" onclick={()=>setMode(1)}>信道</button>
         </div>
       </div>
     </div>
-    <button class="btn btn-xs btn-primary" onclick={readPage} disabled={reading}>
+    <button class="btn btn-sm btn-primary" onclick={readPage} disabled={reading}>
       {reading ? `读取中 ${readProgress}/${end-start}` : `读第${page}页`}
     </button>
-    <button class="btn btn-xs btn-success btn-ghost" onclick={writePage}>写本页</button>
+    <button class="btn btn-sm btn-success btn-ghost" onclick={writePage}>写本页</button>
   </div>
 
   <!-- 分页 -->
   <div class="flex items-center justify-center gap-1.5 mb-2">
-    <button class="btn btn-xs btn-ghost" onclick={()=>goPage(0)} disabled={page===0}>«</button>
-    <button class="btn btn-xs btn-ghost" onclick={()=>goPage(page-1)} disabled={page===0}>‹</button>
-    <input type="number" class="input input-xs input-bordered w-12 text-center font-mono text-xs" bind:value={pageInput} min="0" max={totalPages-1} onkeydown={(e)=>{if(e.key==='Enter')goPage(parseInt(pageInput)||0)}} />
-    <span class="text-[10px] text-base-content/50">/ {totalPages - 1}</span>
-    <button class="btn btn-xs btn-ghost" onclick={()=>goPage(page+1)} disabled={page>=totalPages-1}>›</button>
-    <button class="btn btn-xs btn-ghost" onclick={()=>goPage(totalPages-1)} disabled={page>=totalPages-1}>»</button>
-    <span class="text-[10px] text-base-content/40 ml-2">#{start}-#{end-1}</span>
+    <button class="btn btn-sm btn-ghost" onclick={()=>goPage(0)} disabled={page===0}>«</button>
+    <button class="btn btn-sm btn-ghost" onclick={()=>goPage(page-1)} disabled={page===0}>‹</button>
+    <input type="number" class="input input-sm input-bordered w-12 text-center font-mono text-xs" bind:value={pageInput} min="0" max={totalPages-1} onkeydown={(e)=>{if(e.key==='Enter')goPage(parseInt(pageInput)||0)}} />
+    <span class="text-[12px] text-base-content/50">/ {totalPages - 1}</span>
+    <button class="btn btn-sm btn-ghost" onclick={()=>goPage(page+1)} disabled={page>=totalPages-1}>›</button>
+    <button class="btn btn-sm btn-ghost" onclick={()=>goPage(totalPages-1)} disabled={page>=totalPages-1}>»</button>
+    <span class="text-[12px] text-base-content/40 ml-2">#{start}-#{end-1}</span>
   </div>
 
   <!-- 表格 -->
   <div class="overflow-auto max-h-[360px] rounded-md border border-base-300">
-    <table class="w-full text-[11px] border-collapse">
+    <table class="w-full text-[13px] border-collapse">
       <thead class="sticky top-0 z-10">
-        <tr class="bg-base-300 text-base-content/50 text-[9px] uppercase tracking-wide">
+        <tr class="bg-base-300 text-base-content/50 text-[13px] uppercase tracking-wide">
           <th class="py-1.5 px-1 text-center font-medium w-7">#</th>
           <th class="py-1.5 px-1 text-left font-medium">名称</th>
           <th class="py-1.5 px-1 text-right font-medium w-[72px]">VFOA</th>
@@ -121,12 +121,12 @@
           {@const c = channels[chNum]}
           {@const isEdit = editing?.ch === chNum}
           <tr class="hover:bg-base-300/30 transition-colors {c ? '' : 'opacity-50'}">
-            <td class="py-0.5 px-1 text-center font-mono text-base-content/40 text-[10px]">{chNum}</td>
+            <td class="py-0.5 px-1 text-center font-mono text-base-content/40 text-[12px]">{chNum}</td>
 
             <!-- 名称 -->
             <td class="py-0.5 px-1" onclick={()=>startEdit(chNum, 'name', c?.name)}>
               {#if isEdit && editing.field === 'name'}
-                <input type="text" class="input input-xs input-bordered w-full text-[11px]" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} maxlength="12" autofocus />
+                <input type="text" class="input input-sm input-bordered w-full text-[13px]" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} maxlength="12" autofocus />
               {:else}
                 <span class="cursor-pointer {c?.name?'font-medium':''}">{c?.name || '—'}</span>
               {/if}
@@ -135,7 +135,7 @@
             <!-- VFOA 频率 -->
             <td class="py-0.5 px-1 text-right" onclick={()=>startEdit(chNum, 'freq_a', fmtFreq(c?.vfoa_freq))}>
               {#if isEdit && editing.field === 'freq_a'}
-                <input type="text" class="input input-xs input-bordered w-full font-mono text-[11px] text-right" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
+                <input type="text" class="input input-sm input-bordered w-full font-mono text-[13px] text-right" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
               {:else}
                 <span class="cursor-pointer font-mono {c?'text-success':''}">{c ? fmtFreq(c.vfoa_freq) : '—'}</span>
               {/if}
@@ -144,7 +144,7 @@
             <!-- VFOA 模式 -->
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'mode_a', c?.vfoa_mode)}>
               {#if isEdit && editing.field === 'mode_a'}
-                <select class="select select-xs select-bordered w-full text-[10px]" bind:value={editVal} onchange={commitEdit}>
+                <select class="select select-sm select-bordered w-full text-[12px]" bind:value={editVal} onchange={commitEdit}>
                   {#each MODE_LIST as m}<option value={m.v}>{m.n}</option>{/each}
                 </select>
               {:else}
@@ -155,7 +155,7 @@
             <!-- VFOB 频率 -->
             <td class="py-0.5 px-1 text-right" onclick={()=>startEdit(chNum, 'freq_b', fmtFreq(c?.vfob_freq))}>
               {#if isEdit && editing.field === 'freq_b'}
-                <input type="text" class="input input-xs input-bordered w-full font-mono text-[11px] text-right" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
+                <input type="text" class="input input-sm input-bordered w-full font-mono text-[13px] text-right" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
               {:else}
                 <span class="cursor-pointer font-mono {c?'text-success':''}">{c ? fmtFreq(c.vfob_freq) : '—'}</span>
               {/if}
@@ -164,7 +164,7 @@
             <!-- VFOB 模式 -->
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'mode_b', c?.vfob_mode)}>
               {#if isEdit && editing.field === 'mode_b'}
-                <select class="select select-xs select-bordered w-full text-[10px]" bind:value={editVal} onchange={commitEdit}>
+                <select class="select select-sm select-bordered w-full text-[12px]" bind:value={editVal} onchange={commitEdit}>
                   {#each MODE_LIST as m}<option value={m.v}>{m.n}</option>{/each}
                 </select>
               {:else}
@@ -175,26 +175,26 @@
             <!-- TX CTCSS -->
             <td class="py-0.5 px-1 text-center font-mono" onclick={()=>startEdit(chNum, 'ctcss_tx', c?.tx_ctcss)}>
               {#if isEdit && editing.field === 'ctcss_tx'}
-                <input type="number" class="input input-xs input-bordered w-full font-mono text-[11px] text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="55" autofocus />
+                <input type="number" class="input input-sm input-bordered w-full font-mono text-[13px] text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="55" autofocus />
               {:else}
-                <span class="cursor-pointer text-[10px]" title={ctcssName(c?.tx_ctcss || 0)}>{c ? ctcssName(c.tx_ctcss) : '—'}</span>
+                <span class="cursor-pointer text-[12px]" title={ctcssName(c?.tx_ctcss || 0)}>{c ? ctcssName(c.tx_ctcss) : '—'}</span>
               {/if}
             </td>
 
             <!-- RX CTCSS -->
             <td class="py-0.5 px-1 text-center font-mono" onclick={()=>startEdit(chNum, 'ctcss_rx', c?.rx_ctcss)}>
               {#if isEdit && editing.field === 'ctcss_rx'}
-                <input type="number" class="input input-xs input-bordered w-full font-mono text-[11px] text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="55" autofocus />
+                <input type="number" class="input input-sm input-bordered w-full font-mono text-[13px] text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="55" autofocus />
               {:else}
-                <span class="cursor-pointer text-[10px]" title={ctcssName(c?.rx_ctcss || 0)}>{c ? ctcssName(c.rx_ctcss) : '—'}</span>
+                <span class="cursor-pointer text-[12px]" title={ctcssName(c?.rx_ctcss || 0)}>{c ? ctcssName(c.rx_ctcss) : '—'}</span>
               {/if}
             </td>
 
             <!-- 操作 -->
             <td class="py-0.5 px-1 text-center">
               <div class="flex gap-0.5 justify-center">
-                <button class="btn btn-xs btn-ghost text-[9px] px-1 h-5" onclick={()=>readChannel(chNum)}>R</button>
-                <button class="btn btn-xs btn-ghost text-[9px] px-1 h-5 {c?'text-success':''}" onclick={()=>writeChannel(chNum)} disabled={!c}>W</button>
+                <button class="btn btn-sm btn-ghost text-[13px] px-1 h-5" onclick={()=>readChannel(chNum)}>R</button>
+                <button class="btn btn-sm btn-ghost text-[13px] px-1 h-5 {c?'text-success':''}" onclick={()=>writeChannel(chNum)} disabled={!c}>W</button>
               </div>
             </td>
           </tr>
