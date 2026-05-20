@@ -236,6 +236,32 @@ fn parse_command(cmd: &str, d: &Value) -> Option<RadioCommand> {
                 name,
             }
         },
+        "dmr_channel_read" => RadioCommand::ReadDmrChannel {
+            channel: d.get("channel").and_then(|v| v.as_u64()).unwrap_or(0) as u16,
+        },
+        "dmr_channel_write" => {
+            let ch = d.get("channel").and_then(|v| v.as_u64()).unwrap_or(0) as u16;
+            RadioCommand::WriteDmrChannel {
+                channel: ch,
+                call_format: d.get("call_format").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
+                tx_cc: d.get("tx_cc").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
+                rx_cc: d.get("rx_cc").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
+                slot: d.get("slot").and_then(|v| v.as_u64()).unwrap_or(1) as u8,
+                call_id: d.get("call_id").and_then(|v| v.as_u64()).unwrap_or(0) as u32,
+                own_id: d.get("own_id").and_then(|v| v.as_u64()).unwrap_or(0) as u32,
+                ch_type: d.get("ch_type").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
+                rx_ctcss: d.get("rx_ctcss").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
+                tx_ctcss: d.get("tx_ctcss").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
+                sqlevel: d.get("sqlevel").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
+                spkgain: d.get("spkgain").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
+                dmrexist: d.get("dmrexist").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
+                dmod_gain: d.get("dmod_gain").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
+                scr_en: d.get("scr_en").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
+                scr_seed: d.get("scr_seed").and_then(|v| v.as_u64()).unwrap_or(0) as u16,
+                ch_bs_mode: d.get("ch_bs_mode").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
+                validat: d.get("validat").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
+            }
+        },
         "channel_mode" => RadioCommand::SetChannelMode {
             mode: match d.get("mode").and_then(|v| v.as_u64()).unwrap_or(0) {
                 0 => ChannelMode::Vfo,

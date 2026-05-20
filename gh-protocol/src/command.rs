@@ -93,8 +93,27 @@ pub enum RadioCommand {
     },                                  // 0x40
     ReadChannel { channel: u16 },       // 0x41
     SetChannelMode { mode: ChannelMode }, // 0x42
-    // DMR信道设置 0x43 (略)
-    // DMR信道读取 0x44 (略)
+    WriteDmrChannel {
+        channel: u16,
+        call_format: u8,
+        tx_cc: u8,
+        rx_cc: u8,
+        slot: u8,
+        call_id: u32,
+        own_id: u32,
+        ch_type: u8,
+        rx_ctcss: u8,
+        tx_ctcss: u8,
+        sqlevel: u8,
+        spkgain: u8,
+        dmrexist: u8,
+        dmod_gain: u8,
+        scr_en: u8,
+        scr_seed: u16,
+        ch_bs_mode: u8,
+        validat: u8,
+    },                                  // 0x43
+    ReadDmrChannel { channel: u16 },    // 0x44
     SetIqBandwidth { bw: u8 },          // 0x45, 0~6
 
     // === 9 功放控制 ===
@@ -228,6 +247,8 @@ impl RadioCommand {
             RadioCommand::WriteChannel { .. } => 0x40,
             RadioCommand::ReadChannel { .. } => 0x41,
             RadioCommand::SetChannelMode { .. } => 0x42,
+            RadioCommand::WriteDmrChannel { .. } => 0x43,
+            RadioCommand::ReadDmrChannel { .. } => 0x44,
             RadioCommand::SetIqBandwidth { .. } => 0x45,
             RadioCommand::PaParamsRequest => 0x48,
             RadioCommand::SetFreqHopping { .. } => 0x49,
@@ -355,6 +376,39 @@ impl RadioCommand {
                 data.extend(name);
             }
             RadioCommand::ReadChannel { channel } => {
+                let ch = *channel as u16;
+                data.push((ch >> 8) as u8);
+                data.push((ch & 0xFF) as u8);
+            }
+            RadioCommand::WriteDmrChannel {
+                channel, call_format, tx_cc, rx_cc, slot, call_id, own_id,
+                ch_type, rx_ctcss, tx_ctcss, sqlevel, spkgain,
+                dmrexist, dmod_gain, scr_en, scr_seed, ch_bs_mode, validat,
+            } => {
+                let ch = *channel as u16;
+                data.push((ch >> 8) as u8);
+                data.push((ch & 0xFF) as u8);
+                data.push(*call_format);
+                data.push(*tx_cc);
+                data.push(*rx_cc);
+                data.push(*slot);
+                data.extend((*call_id).to_be_bytes());
+                data.extend((*own_id).to_be_bytes());
+                data.push(*ch_type);
+                data.push(*rx_ctcss);
+                data.push(*tx_ctcss);
+                data.push(*sqlevel);
+                data.push(*spkgain);
+                data.push(*dmrexist);
+                data.push(*dmod_gain);
+                data.push(*scr_en);
+                let ss = *scr_seed;
+                data.push((ss >> 8) as u8);
+                data.push((ss & 0xFF) as u8);
+                data.push(*ch_bs_mode);
+                data.push(*validat);
+            }
+            RadioCommand::ReadDmrChannel { channel } => {
                 let ch = *channel as u16;
                 data.push((ch >> 8) as u8);
                 data.push((ch & 0xFF) as u8);
