@@ -165,19 +165,19 @@
           <tr class="hover:bg-base-300/30 transition-colors {c ? '' : 'opacity-50'}">
             <td class="py-0.5 px-1 text-center font-mono text-base-content/40 text-[12px]">{chNum}</td>
             <td class="py-0.5 px-1" onclick={()=>startEdit(chNum, 'name', c?.name)}>
-              {#if isEdit && editing.field === 'name'}<input type="text" class="input input-sm input-bordered w-full" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} maxlength="12" autofocus />
+              {#if isEdit && editing.field === 'name'}<input type="text" class="input input-sm input-bordered w-full text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} maxlength="12" autofocus />
               {:else}<span class="cursor-pointer truncate block max-w-[72px] {c?.name?'font-medium':''}">{c?.name || '—'}</span>{/if}
             </td>
-            <td class="py-0.5 px-1 text-right" onclick={()=>startEdit(chNum, 'freq_a', fmtFreq(c?.vfoa_freq))}>
-              {#if isEdit && editing.field === 'freq_a'}<input type="text" class="input input-sm input-bordered w-full font-mono text-right" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
+            <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'freq_a', fmtFreq(c?.vfoa_freq))}>
+              {#if isEdit && editing.field === 'freq_a'}<input type="text" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
               {:else}<span class="cursor-pointer font-mono {c?'text-success':''}">{c ? fmtFreq(c.vfoa_freq) : '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'mode_a', c?.vfoa_mode)}>
               {#if isEdit && editing.field === 'mode_a'}<select class="select select-sm select-bordered w-full text-[12px]" bind:value={editVal} onchange={commitEdit}>{#each MODE_LIST as m}<option value={m.v}>{m.n}</option>{/each}</select>
               {:else}<span class="cursor-pointer">{c ? modeName(c.vfoa_mode) : '—'}</span>{/if}
             </td>
-            <td class="py-0.5 px-1 text-right" onclick={()=>startEdit(chNum, 'freq_b', fmtFreq(c?.vfob_freq))}>
-              {#if isEdit && editing.field === 'freq_b'}<input type="text" class="input input-sm input-bordered w-full font-mono text-right" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
+            <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'freq_b', fmtFreq(c?.vfob_freq))}>
+              {#if isEdit && editing.field === 'freq_b'}<input type="text" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
               {:else}<span class="cursor-pointer font-mono {c?'text-success':''}">{c ? fmtFreq(c.vfob_freq) : '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'mode_b', c?.vfob_mode)}>
@@ -242,12 +242,12 @@
               {#if isEdit && editing.field==='slot'}<input type="number" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="1" max="2" autofocus />
               {:else}<span class="cursor-pointer">{c?.slot ?? '—'}</span>{/if}
             </td>
-            <td class="py-0.5 px-1 text-right font-mono" onclick={()=>startEdit(chNum, 'call_id', c?.call_id)}>
-              {#if isEdit && editing.field==='call_id'}<input type="number" class="input input-sm input-bordered w-full font-mono text-right" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
+            <td class="py-0.5 px-1 text-center font-mono" onclick={()=>startEdit(chNum, 'call_id', c?.call_id)}>
+              {#if isEdit && editing.field==='call_id'}<input type="number" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
               {:else}<span class="cursor-pointer">{c?.call_id ?? '—'}</span>{/if}
             </td>
-            <td class="py-0.5 px-1 text-right font-mono" onclick={()=>startEdit(chNum, 'own_id', c?.own_id)}>
-              {#if isEdit && editing.field==='own_id'}<input type="number" class="input input-sm input-bordered w-full font-mono text-right" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
+            <td class="py-0.5 px-1 text-center font-mono" onclick={()=>startEdit(chNum, 'own_id', c?.own_id)}>
+              {#if isEdit && editing.field==='own_id'}<input type="number" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
               {:else}<span class="cursor-pointer">{c?.own_id ?? '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'ch_type', c?.ch_type)}>
