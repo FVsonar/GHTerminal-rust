@@ -3,63 +3,23 @@
   import { sendCommand } from '../lib/tauri-bridge.js';
   import { radioStatus } from '../lib/store.js';
   import { MODES } from '../lib/radio-types.js';
-  import ToggleSwitch from './ToggleSwitch.svelte';
-
-  let s = $derived($radioStatus);
-  let statusOn = $state(true);
-
-  function toggleStatus(on) {
-    statusOn = on;
-    invoke('set_poll_toggle', { poll: 'status', on });
-  }
+  let s = $derived($radioStatus); let on = $state(true);
+  function toggle(v){on=v;invoke('set_poll_toggle',{poll:'status',on:v});}
 </script>
 
-<div class="panel">
-  <div class="panel-header">
-    <span class="panel-title">VFO</span>
-    <ToggleSwitch on={statusOn} ontoggle={toggleStatus} />
+<div class="card bg-base-200 border border-base-300 shadow-sm p-3">
+  <div class="flex items-center justify-between mb-2.5 pb-1.5 border-b border-base-300">
+    <span class="text-[10px] font-semibold text-base-content/50 uppercase tracking-widest">VFO</span>
+    <input type="checkbox" class="toggle toggle-xs toggle-success" checked={on} onchange={(e)=>toggle(e.target.checked)} />
   </div>
-  <div class="vfo-list">
-    <button class="vfo-btn" class:active={s.v === 0} onclick={() => sendCommand('set_ab', { mode: 0 })}>
-      <span class="vfo-label">A</span>
-      <span class="vfo-freq">{(s.fA / 1_000_000).toFixed(3)}</span>
-      <span class="vfo-mode">{MODES[s.mA] || 'USB'}</span>
-    </button>
-    <button class="vfo-btn" class:active={s.v === 1} onclick={() => sendCommand('set_ab', { mode: 1 })}>
-      <span class="vfo-label">B</span>
-      <span class="vfo-freq">{(s.fB / 1_000_000).toFixed(3)}</span>
-      <span class="vfo-mode">{MODES[s.mB] || 'USB'}</span>
-    </button>
+  <div class="flex flex-col gap-1 mb-2">
+    {#each [{l:'A',f:s.fA,m:s.mA,v:0},{l:'B',f:s.fB,m:s.mB,v:1}] as vfo}
+      <button class="flex items-center gap-2 px-2.5 py-2 rounded-md w-full text-left transition-all {s.v===vfo.v?'bg-primary/20 border-primary/30':'bg-base-300/50'} border border-transparent hover:border-base-300" onclick={()=>sendCommand('set_ab',{mode:vfo.v})}>
+        <span class="text-[11px] font-bold px-1.5 py-0.5 rounded text-base-content/50 bg-base-300 min-w-[20px] text-center">{vfo.l}</span>
+        <span class="font-mono text-sm font-semibold">{(vfo.f/1_000_000).toFixed(3)}</span>
+        <span class="text-[10px] text-base-content/50 ml-auto">{MODES[vfo.m]||'USB'}</span>
+      </button>
+    {/each}
   </div>
-  <button class="refresh-btn" onclick={() => sendCommand('status_request')}>刷新状态</button>
+  <button class="btn btn-ghost btn-xs w-full text-base-content/50" onclick={()=>sendCommand('status_request')}>刷新状态</button>
 </div>
-
-<style>
-  .panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border);
-  }
-  .panel-header .panel-title { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-  .vfo-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
-  .vfo-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    width: 100%;
-    text-align: left;
-  }
-  .vfo-label {
-    font-size: 11px; font-weight: 700; color: var(--text-muted);
-    background: var(--bg-input); padding: 2px 6px;
-    border-radius: 3px; min-width: 20px; text-align: center;
-  }
-  .vfo-btn.active .vfo-label { background: var(--accent-blue); color: #fff; }
-  .vfo-freq { font-family: var(--font-mono); font-size: 14px; font-weight: 600; }
-  .vfo-mode { font-size: 10px; color: var(--text-muted); margin-left: auto; }
-  .refresh-btn { width: 100%; font-size: 11px; padding: 5px; color: var(--text-muted); }
-</style>

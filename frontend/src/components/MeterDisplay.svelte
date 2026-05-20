@@ -1,148 +1,31 @@
 <script>
   import { invoke } from '@tauri-apps/api/core';
   import { sMeterValue, poMeterValue, meterData } from '../lib/store.js';
-  import ToggleSwitch from './ToggleSwitch.svelte';
-
-  let sMeter = $derived($sMeterValue);
-  let poMeter = $derived($poMeterValue);
-  let m = $derived($meterData);
+  let sM = $derived($sMeterValue); let pM = $derived($poMeterValue); let m = $derived($meterData);
+  let swr = $derived((m.swr&0xC0)===0?m.swr&0x3F:0);
+  let alc = $derived((m.swr&0xC0)===0x40?m.swr&0x3F:0);
   let meterOn = $state(true);
-
-  let swrVal = $derived((m.swr & 0xC0) === 0x00 ? m.swr & 0x3F : 0);
-  let alcVal = $derived((m.swr & 0xC0) === 0x40 ? m.swr & 0x3F : 0);
-
-  function pct(v, max) { return Math.min(100, (v / max) * 100); }
-
-  function toggleMeter(on) {
-    meterOn = on;
-    invoke('set_poll_toggle', { poll: 'meter', on });
-  }
+  function pct(v) { return Math.min(100,(v/34)*100); }
+  function toggle(on) { meterOn=on; invoke('set_poll_toggle',{poll:'meter',on}); }
 </script>
 
-<div class="meter-row">
-  <div class="row-header">
-    <span class="row-title">仪表</span>
-    <ToggleSwitch on={meterOn} ontoggle={toggleMeter} />
+<div class="card bg-base-200 border border-base-300 shadow-sm px-3.5 py-2.5">
+  <div class="flex items-center justify-between mb-1.5">
+    <span class="text-[10px] font-semibold text-base-content/50 uppercase tracking-widest">仪表</span>
+    <input type="checkbox" class="toggle toggle-xs toggle-success" checked={meterOn} onchange={(e)=>toggle(e.target.checked)} />
   </div>
-  <div class="meter-block">
-    <div class="meter-label-row">
-      <span class="meter-name">S</span>
-      <span class="meter-value">{sMeter}</span>
+  <div class="grid grid-cols-[2fr_1fr_1fr_1fr] gap-2">
+    {#each [{label:'S',val:sM,cls:'from-success via-warning to-error'},{label:'PO',val:pM,cls:'bg-error'},{label:'SWR',val:swr,cls:'bg-warning'},{label:'ALC',val:alc,cls:'bg-secondary'}] as it}
+    <div class="min-w-0">
+      <div class="flex justify-between items-baseline mb-0.5">
+        <span class="text-[10px] font-semibold text-base-content/50 uppercase">{it.label}</span>
+        <span class="font-mono text-xs font-semibold">{it.val}</span>
+      </div>
+      <div class="relative h-3.5 bg-base-300 rounded-sm overflow-hidden border border-base-300">
+        <div class="h-full rounded-sm transition-[width] duration-200 ease-out {it.cls}" style="width:{pct(it.val)}%; {it.label==='S'?'background-image:linear-gradient(90deg,var(--color-success),var(--color-warning),var(--color-error))':'background-color:var(--color-'+it.cls.split('-')[1]+')'}"></div>
+        {#if it.label==='S'}{#each [3,6,9,12,15,18,21,24,27,30] as t}<div class="absolute top-0 w-px h-full bg-white/5" style="left:{(t/34)*100}%"></div>{/each}{/if}
+      </div>
     </div>
-    <div class="meter-track">
-      <div class="meter-fill s-fill" style="width:{pct(sMeter, 34)}%"></div>
-      {#each [3,6,9,12,15,18,21,24,27,30] as t}
-        <div class="meter-tick" style="left:{(t/34)*100}%"></div>
-      {/each}
-    </div>
-  </div>
-
-  <!-- PO 表 -->
-  <div class="meter-block">
-    <div class="meter-label-row">
-      <span class="meter-name">PO</span>
-      <span class="meter-value">{poMeter}</span>
-    </div>
-    <div class="meter-track">
-      <div class="meter-fill po-fill" style="width:{pct(poMeter, 34)}%"></div>
-    </div>
-  </div>
-
-  <!-- SWR -->
-  <div class="meter-block">
-    <div class="meter-label-row">
-      <span class="meter-name">SWR</span>
-      <span class="meter-value">{swrVal}</span>
-    </div>
-    <div class="meter-track">
-      <div class="meter-fill swr-fill" style="width:{pct(swrVal, 34)}%"></div>
-    </div>
-  </div>
-
-  <!-- ALC -->
-  <div class="meter-block">
-    <div class="meter-label-row">
-      <span class="meter-name">ALC</span>
-      <span class="meter-value">{alcVal}</span>
-    </div>
-    <div class="meter-track">
-      <div class="meter-fill alc-fill" style="width:{pct(alcVal, 34)}%"></div>
-    </div>
+    {/each}
   </div>
 </div>
-
-<style>
-  .row-header {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 2px;
-  }
-  .row-title {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-  }
-  .meter-row {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: 8px;
-    background: var(--bg-panel);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 10px 14px;
-    box-shadow: var(--shadow-panel);
-  }
-
-  .meter-block { min-width: 0; }
-
-  .meter-label-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    margin-bottom: 5px;
-  }
-  .meter-name {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  .meter-value {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
-
-  .meter-track {
-    position: relative;
-    height: 14px;
-    background: var(--bg-input);
-    border-radius: 3px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
-
-  .meter-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.2s ease;
-  }
-  .s-fill { background: linear-gradient(90deg, var(--meter-green), var(--meter-yellow), var(--meter-red)); }
-  .po-fill { background: var(--accent-red); }
-  .swr-fill { background: var(--accent-amber); }
-  .alc-fill { background: var(--accent-purple); }
-
-  .meter-tick {
-    position: absolute;
-    top: 0;
-    width: 1px;
-    height: 100%;
-    background: rgba(255,255,255,0.08);
-  }
-</style>
