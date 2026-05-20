@@ -21,8 +21,20 @@
   import WaterfallCanvas from './canvas/WaterfallCanvas.svelte';
 
   let unlisteners = [];
+  let dark = $state(true);
+
+  function toggleTheme() {
+    dark = !dark;
+    const theme = dark ? 'business' : 'corporate';
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }
 
   onMount(() => {
+    const saved = localStorage.getItem('theme');
+    dark = saved !== 'corporate';
+    document.documentElement.setAttribute('data-theme', dark ? 'business' : 'corporate');
+
     Promise.all([
       onEvent('radio-status', (d) => radioStatus.update(s => ({ ...s, ...d }))),
       onEvent('radio-params', (d) => radioParams.update(s => ({ ...s, ...d }))),
@@ -43,6 +55,9 @@
     <div class="flex items-center gap-2.5">
       <span class="w-2.5 h-2.5 rounded-full bg-success shadow-[0_0_8px_rgba(0,229,160,.5)]"></span>
       <span class="text-sm font-semibold text-success tracking-wider">GH-Terminal</span>
+      <button class="btn btn-ghost btn-xs text-base ml-2" onclick={toggleTheme} title="切换主题">
+        {dark ? '☀' : '🌙'}
+      </button>
     </div>
     {#if $connectionStatus.connected}
       <StatusBar />
@@ -59,7 +74,6 @@
       <div class="px-4 pt-2 pb-0 shrink-0">
         <MeterDisplay />
       </div>
-
       <div class="px-4 pt-1 pb-2 shrink-0 flex flex-col gap-0.5">
         <div class="h-[110px] bg-black rounded-md overflow-hidden border border-base-300">
           <SpectrumCanvas />
@@ -69,7 +83,6 @@
         </div>
         <SpectrumControls />
       </div>
-
       <div class="flex-1 overflow-y-auto px-4 pb-3 pt-1">
         <div class="grid grid-cols-[repeat(auto-fill,minmax(248px,1fr))] gap-2">
           <FrequencyControl />
