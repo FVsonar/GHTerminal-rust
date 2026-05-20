@@ -20,6 +20,7 @@
 
   let unlisteners = [];
   let dark = $state(true);
+  let toast = $state(null); // {text, ok}
 
   function toggleTheme() {
     dark = !dark;
@@ -39,6 +40,10 @@
       onEvent('meter-data', (d) => meterData.update(s => ({ ...s, ...d }))),
       onEvent('spectrum-data', (d) => spectrumData.set({ data: new Uint8Array(d), timestamp: Date.now() })),
       onEvent('radio-error', () => {}),
+      onEvent('cmd-result', (d) => {
+        toast = { text: d.cmd + (d.ok ? ' ✓' : ' ✗'), ok: d.ok };
+        setTimeout(() => { toast = null; }, 1500);
+      }),
     ]).then(fns => { unlisteners = fns; });
     return () => unlisteners.forEach(fn => fn());
   });
@@ -97,6 +102,12 @@
     <div class="flex-1 flex flex-col items-center justify-center text-base-content/50 gap-3">
       <span class="text-6xl opacity-50">📡</span>
       <p class="text-base">请连接电台设备</p>
+    </div>
+  {/if}
+
+  {#if toast}
+    <div class="fixed bottom-4 right-4 z-50 transition-all duration-200 {toast.ok ? 'text-success' : 'text-error'} bg-base-200 border {toast.ok ? 'border-success/30' : 'border-error/30'} rounded-lg px-4 py-2 shadow-lg text-sm font-mono">
+      {toast.text}
     </div>
   {/if}
 </main>

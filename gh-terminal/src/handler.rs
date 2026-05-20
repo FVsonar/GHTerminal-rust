@@ -2,12 +2,29 @@ use tauri::Emitter;
 use tracing::{debug, info, warn};
 
 use gh_protocol::Frame;
+use crate::state::SharedState;
 
 use crate::state::*;
 
+fn resolve_pending_cmd(cbyte: u8, state: &SharedState) {
+    if let Ok(mut pending) = state.pending_cmds.lock() {
+        let mut kept = Vec::new();
+        for (cb, tx) in pending.drain(..) {
+            if cb == cbyte {
+                let _ = tx.send(true);
+            } else {
+                kept.push((cb, tx));
+            }
+        }
+        *pending = kept;
+    }
+}
+
 pub fn handle_frame(frame: &Frame, handle: &tauri::AppHandle, state: &SharedState) {
     match frame {
-        Frame::Command(cmd) => match cmd.cmd {
+        Frame::Command(cmd) => {
+            resolve_pending_cmd(cmd.cmd, state);
+            match cmd.cmd {
             0x0B => handle_status_response(&cmd.data, handle, state),
             0x27 => handle_device_type(&cmd.data, handle),
             0x39 => handle_spectrum_response(&cmd.data, handle, state),
@@ -27,6 +44,7 @@ pub fn handle_frame(frame: &Frame, handle: &tauri::AppHandle, state: &SharedStat
             }
             _ => {
                 debug!("unhandled command: 0x{:02X}", cmd.cmd);
+            }
             }
         },
         Frame::Spectrum(spec) => {
