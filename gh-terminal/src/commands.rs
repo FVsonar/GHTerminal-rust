@@ -260,33 +260,44 @@ pub async fn send_command(app: tauri::AppHandle, cmd: String, data: Value, state
     let hex: String = bytes.iter().map(|b| format!("{b:02X}")).collect::<Vec<_>>().join(" ");
     info!("CMD from UI: {cmd} → {hex}");
 
-    // 创建响应等待通道
-    let (resp_tx, resp_rx) = oneshot::channel::<bool>();
-    {
-        let mut pending = state.pending_cmds.lock().map_err(|e| e.to_string())?;
-        pending.push((cbyte, resp_tx));
-    }
+    const MAX_RETRIES: u32 = 3;
+    let mut success = false;
 
-    // 发送到串口
-    {
-        let tx_guard = state.cmd_tx.lock().await;
-        if let Some(tx) = tx_guard.as_ref() {
-            tx.send(bytes).await.map_err(|e| e.to_string())?;
-        } else {
-            warn!("No serial connection, dropping command: {cmd}");
-            return Err("串口未连接".into());
+    for attempt in 1..=MAX_RETRIES {
+        if attempt > 1 {
+            info!("CMD retry {}/{}: {cmd}", attempt, MAX_RETRIES);
         }
-    }
 
-    // 等待响应或200ms超时
-    let success = match tokio::time::timeout(std::time::Duration::from_millis(200), resp_rx).await {
-        Ok(Ok(true)) => true,
-        _ => false,
-    };
+        // 创建响应等待通道
+        let (resp_tx, resp_rx) = oneshot::channel::<bool>();
+        {
+            let mut pending = state.pending_cmds.lock().map_err(|e| e.to_string())?;
+            pending.push((cbyte, resp_tx));
+        }
+
+        // 发送到串口
+        {
+            let tx_guard = state.cmd_tx.lock().await;
+            if let Some(tx) = tx_guard.as_ref() {
+                tx.send(bytes.clone()).await.map_err(|e| e.to_string())?;
+            } else {
+                warn!("No serial connection");
+                break;
+            }
+        }
+
+        // 等待响应或200ms超时
+        success = match tokio::time::timeout(std::time::Duration::from_millis(200), resp_rx).await {
+            Ok(Ok(true)) => true,
+            _ => false,
+        };
+
+        if success { break; }
+    }
 
     let _ = app.emit("cmd-result", serde_json::json!({"cmd": cmd, "ok": success}));
     if !success {
-        warn!("CMD timeout: {cmd}");
+        warn!("CMD failed after {} retries: {cmd}", MAX_RETRIES);
     }
     Ok(())
 }
