@@ -1,11 +1,12 @@
 <script>
   import { sendCommand } from '../lib/tauri-bridge.js';
+  import { invoke } from '@tauri-apps/api/core';
   import { radioParams } from '../lib/store.js';
-  let p = $derived($radioParams);
+  let p = $derived($radioParams); let on = $state(true);
 </script>
 
 <div class="card bg-base-200 border border-base-300 shadow-sm p-3">
-  <span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest mb-2.5 block">降噪 / 阈值</span>
+  <div class="flex items-center justify-between mb-2.5 pb-1.5 border-b border-base-300"><span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest">降噪 / 阈值</span><input type="checkbox" class="toggle toggle-sm toggle-success" checked={on} onchange={(e)=>toggle(e.target.checked)} /></div>
   <div class="flex gap-1 mb-2">
     <button class="btn btn-sm flex-1 {p.nr===1?'btn-primary':'btn-ghost'}" onclick={()=>sendCommand('set_nr',{on:p.nr!==1})}>NR {p.nr===1?'ON':'OFF'}</button>
     <button class="btn btn-sm flex-1 {p.nb===1?'btn-primary':'btn-ghost'}" onclick={()=>sendCommand('set_nb',{on:p.nb!==1})}>NB {p.nb===1?'ON':'OFF'}</button>

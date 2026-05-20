@@ -1,11 +1,12 @@
 <script>
   import { sendCommand } from '../lib/tauri-bridge.js';
+  import { invoke } from '@tauri-apps/api/core';
   import { radioParams } from '../lib/store.js';
-  let p = $derived($radioParams);
+  let p = $derived($radioParams); let on = $state(true);
 </script>
 
 <div class="card bg-base-200 border border-base-300 shadow-sm p-3">
-  <span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest mb-2.5 block">RF 射频</span>
+  <div class="flex items-center justify-between mb-2.5 pb-1.5 border-b border-base-300"><span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest">RF 射频</span><input type="checkbox" class="toggle toggle-sm toggle-success" checked={on} onchange={(e)=>toggle(e.target.checked)} /></div>
   {@render slider("射频增益",p.rfg,0,100,(v)=>sendCommand('set_rfg',{gain:v}))}
   {@render slider("中频增益",p.ifg,0,80,(v)=>sendCommand('set_ifg',{gain:v}))}
   {@render slider("禁噪SQL",p.sql,0,20,(v)=>sendCommand('set_sql',{level:v}))}

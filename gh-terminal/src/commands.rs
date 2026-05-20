@@ -278,8 +278,49 @@ fn parse_command(cmd: &str, d: &Value) -> Option<RadioCommand> {
     })
 }
 
+/// 命令所属轮询类别
+fn cmd_category(cmd: &str) -> &'static str {
+    match cmd {
+        "ptt" | "set_frequency" | "set_mode" | "set_ab" | "set_split" | "set_band"
+        | "set_rit" | "set_xit" | "set_channel_mode" | "status_request" => "status",
+        "meter_request" => "meter",
+        "set_speaker_vol" | "set_headphone_vol" | "set_mic_gain" | "set_compandor"
+        | "set_bass_eq" | "set_treble_eq" | "set_rfg" | "set_ifg" | "set_sql"
+        | "set_agc" | "set_amp" | "set_filter" | "set_nr" | "set_nb"
+        | "set_nr_threshold" | "set_nb_threshold" | "set_peak_threshold"
+        | "set_power_level" | "set_high_low_power" | "params_request" => "params",
+        "set_spectrum_span" | "set_spectrum_ref" | "set_spectrum_speed"
+        | "set_display_mode" | "spectrum_request" => "spectrum",
+        "set_key_type" | "set_sidetone_vol" | "set_sidetone_freq"
+        | "set_txrx_delay" | "set_key_speed" | "set_cw_training"
+        | "set_cw_decode" | "set_cw_decode_threshold" | "set_usb_data_format" => "cw",
+        "channel_read" | "channel_write" | "dmr_channel_read"
+        | "dmr_channel_write" => "channel",
+        _ => "",
+    }
+}
+
 #[tauri::command]
 pub async fn send_command(app: tauri::AppHandle, cmd: String, data: Value, state: State<'_, Arc<AppState>>) -> Result<(), String> {
+    // 检查开关
+    let cat = cmd_category(&cmd);
+    if !cat.is_empty() {
+        let poll = state.poll_state.lock().await;
+        let allowed = match cat {
+            "status" => poll.status,
+            "meter" => poll.meter,
+            "params" => poll.params,
+            "spectrum" => poll.spectrum,
+            "cw" => poll.cw,
+            "channel" => poll.channel,
+            _ => true,
+        };
+        if !allowed {
+            let _ = app.emit("cmd-result", serde_json::json!({"cmd": cmd, "ok": false}));
+            return Err(format!("{cat} 轮询已关闭"));
+        }
+    }
+
     let radio_cmd = parse_command(&cmd, &data).ok_or_else(|| format!("Invalid command: {cmd}"))?;
     let cbyte = radio_cmd.cmd_byte();
     let bytes = radio_cmd.encode().encode();
@@ -294,14 +335,12 @@ pub async fn send_command(app: tauri::AppHandle, cmd: String, data: Value, state
             info!("CMD retry {}/{}: {cmd}", attempt, MAX_RETRIES);
         }
 
-        // 创建响应等待通道
         let (resp_tx, resp_rx) = oneshot::channel::<bool>();
         {
             let mut pending = state.pending_cmds.lock().map_err(|e| e.to_string())?;
             pending.push((cbyte, resp_tx));
         }
 
-        // 发送到串口
         {
             let tx_guard = state.cmd_tx.lock().await;
             if let Some(tx) = tx_guard.as_ref() {
@@ -312,7 +351,6 @@ pub async fn send_command(app: tauri::AppHandle, cmd: String, data: Value, state
             }
         }
 
-        // 等待响应或200ms超时
         success = match tokio::time::timeout(std::time::Duration::from_millis(200), resp_rx).await {
             Ok(Ok(true)) => true,
             _ => false,
@@ -340,6 +378,8 @@ pub async fn set_poll_toggle(
         "meter" => ps.meter = on,
         "params" => ps.params = on,
         "spectrum" => ps.spectrum = on,
+        "cw" => ps.cw = on,
+        "channel" => ps.channel = on,
         _ => return Err(format!("Unknown poll: {poll}")),
     }
     info!("Poll {poll}: {}", if on { "ON" } else { "OFF" });

@@ -1,4 +1,5 @@
 <script>
+  import { invoke } from '@tauri-apps/api/core';
   import { sendCommand, onEvent } from '../lib/tauri-bridge.js';
   import { onMount } from 'svelte';
   import { MODE_LIST, CTCSS_TABLE } from '../lib/radio-types.js';
@@ -10,7 +11,8 @@
   let page = $state(0), pageInput = $state('0');
   let editing = $state(null), editVal = $state('');
   let reading = $state(false), readProgress = $state(0);
-  let chMode = $state(0);
+  let chMode = $state(0); let chOn = $state(true);
+  function toggleCh(v){chOn=v;invoke('set_poll_toggle',{poll:'channel',on:v});}
   let start = $derived(page * PAGE_SIZE), end = $derived(Math.min(start + PAGE_SIZE, TOTAL_CH));
   let totalPages = $derived(Math.ceil(TOTAL_CH / PAGE_SIZE));
 
@@ -106,7 +108,7 @@
 </script>
 
 <div class="card bg-base-200 border border-base-300 shadow-sm p-3">
-  <span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest mb-2.5 block">信道管理 (0-999)</span>
+  <div class="flex items-center justify-between mb-2.5"><span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest">信道管理 (0-999)</span><input type="checkbox" class="toggle toggle-sm toggle-success" checked={chOn} onchange={(e)=>toggleCh(e.target.checked)} /></div>
 
   <!-- Tab + 模式 -->
   <div class="flex items-end gap-2 mb-2.5">
