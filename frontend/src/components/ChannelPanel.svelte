@@ -147,7 +147,7 @@
       <thead class="sticky top-0 z-10">
         <tr class="bg-base-300 text-base-content/50 text-[11px] uppercase tracking-wide">
           <th class="py-1.5 px-1 text-center font-medium w-7">#</th>
-          <th class="py-1.5 px-1 text-left font-medium">名称</th>
+          <th class="py-1.5 px-1 text-left font-medium w-16">名称</th>
           <th class="py-1.5 px-1 text-right font-medium w-[72px]">VFOA</th>
           <th class="py-1.5 px-1 text-center font-medium w-8">M</th>
           <th class="py-1.5 px-1 text-right font-medium w-[72px]">VFOB</th>
@@ -166,7 +166,7 @@
             <td class="py-0.5 px-1 text-center font-mono text-base-content/40 text-[12px]">{chNum}</td>
             <td class="py-0.5 px-1" onclick={()=>startEdit(chNum, 'name', c?.name)}>
               {#if isEdit && editing.field === 'name'}<input type="text" class="input input-sm input-bordered w-full" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} maxlength="12" autofocus />
-              {:else}<span class="cursor-pointer {c?.name?'font-medium':''}">{c?.name || '—'}</span>{/if}
+              {:else}<span class="cursor-pointer truncate block max-w-[72px] {c?.name?'font-medium':''}">{c?.name || '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-right" onclick={()=>startEdit(chNum, 'freq_a', fmtFreq(c?.vfoa_freq))}>
               {#if isEdit && editing.field === 'freq_a'}<input type="text" class="input input-sm input-bordered w-full font-mono text-right" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
