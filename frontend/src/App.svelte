@@ -8,15 +8,12 @@
   import StatusBar from './components/StatusBar.svelte';
   import MeterDisplay from './components/MeterDisplay.svelte';
   import FrequencyControl from './components/FrequencyControl.svelte';
-  import ModeSelector from './components/ModeSelector.svelte';
-  import PttButton from './components/PttButton.svelte';
   import VfoPanel from './components/VfoPanel.svelte';
   import AudioControls from './components/AudioControls.svelte';
   import RfControls from './components/RfControls.svelte';
   import NrNbControls from './components/NrNbControls.svelte';
   import SpectrumControls from './components/SpectrumControls.svelte';
   import CwControls from './components/CwControls.svelte';
-  import TunerControl from './components/TunerControl.svelte';
   import SpectrumCanvas from './canvas/SpectrumCanvas.svelte';
   import WaterfallCanvas from './canvas/WaterfallCanvas.svelte';
 
@@ -86,13 +83,10 @@
       <div class="flex-1 overflow-y-auto px-4 pb-3 pt-1">
         <div class="grid grid-cols-[repeat(auto-fill,minmax(248px,1fr))] gap-2">
           <FrequencyControl />
-          <ModeSelector />
-          <PttButton />
           <VfoPanel />
           <AudioControls />
           <RfControls />
           <NrNbControls />
-          <TunerControl />
           <CwControls />
         </div>
       </div>
