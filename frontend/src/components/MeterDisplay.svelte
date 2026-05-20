@@ -11,14 +11,14 @@
 
 <div class="card bg-base-200 border border-base-300 shadow-sm px-3.5 py-2.5">
   <div class="flex items-center justify-between mb-1.5">
-    <span class="text-[10px] font-semibold text-base-content/50 uppercase tracking-widest">仪表</span>
-    <input type="checkbox" class="toggle toggle-xs toggle-success" checked={meterOn} onchange={(e)=>toggle(e.target.checked)} />
+    <span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest">仪表</span>
+    <input type="checkbox" class="toggle toggle-sm toggle-success" checked={meterOn} onchange={(e)=>toggle(e.target.checked)} />
   </div>
   <div class="grid grid-cols-[2fr_1fr_1fr_1fr] gap-2">
     {#each [{label:'S',val:sM,cls:'from-success via-warning to-error'},{label:'PO',val:pM,cls:'bg-error'},{label:'SWR',val:swr,cls:'bg-warning'},{label:'ALC',val:alc,cls:'bg-secondary'}] as it}
     <div class="min-w-0">
       <div class="flex justify-between items-baseline mb-0.5">
-        <span class="text-[10px] font-semibold text-base-content/50 uppercase">{it.label}</span>
+        <span class="text-[12px] font-semibold text-base-content/50 uppercase">{it.label}</span>
         <span class="font-mono text-xs font-semibold">{it.val}</span>
       </div>
       <div class="relative h-3.5 bg-base-300 rounded-sm overflow-hidden border border-base-300">

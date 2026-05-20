@@ -8,8 +8,8 @@
 
 <div class="card bg-base-200 border border-base-300 shadow-sm p-3">
   <div class="flex items-center justify-between mb-2.5 pb-1.5 border-b border-base-300">
-    <span class="text-[10px] font-semibold text-base-content/50 uppercase tracking-widest">AF 音频</span>
-    <input type="checkbox" class="toggle toggle-xs toggle-success" checked={on} onchange={(e)=>toggle(e.target.checked)} />
+    <span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest">AF 音频</span>
+    <input type="checkbox" class="toggle toggle-sm toggle-success" checked={on} onchange={(e)=>toggle(e.target.checked)} />
   </div>
   {@render slider("扬声器",p.sv,0,30,(v)=>sendCommand('set_speaker_vol',{vol:v}))}
   {@render slider("耳机",p.hv,0,80,(v)=>sendCommand('set_headphone_vol',{vol:v}))}
@@ -22,9 +22,9 @@
 {#snippet slider(label,value,min,max,onChange)}
 <div class="mb-1">
   <div class="flex justify-between items-baseline mb-1">
-    <span class="text-[10px] font-medium text-base-content/60">{label}</span>
-    <span class="font-mono text-[11px] font-semibold">{value}</span>
+    <span class="text-[12px] font-medium text-base-content/60">{label}</span>
+    <span class="font-mono text-[13px] font-semibold">{value}</span>
   </div>
-  <input type="range" class="range range-xs range-primary" {min} {max} {value} oninput={(e)=>onChange(parseInt(e.target.value))} />
+  <input type="range" class="range range-sm range-primary" {min} {max} {value} oninput={(e)=>onChange(parseInt(e.target.value))} />
 </div>
 {/snippet}

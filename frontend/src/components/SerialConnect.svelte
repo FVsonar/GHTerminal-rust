@@ -39,7 +39,7 @@
   <div class="flex items-center gap-2">
     <span class="w-1.5 h-1.5 rounded-full bg-success shadow-[0_0_5px_var(--color-success)]"></span>
     <span class="font-mono text-xs text-success">{status.port}</span>
-    <button class="btn btn-xs btn-ghost text-error" onclick={disconnect}>断开</button>
+    <button class="btn btn-sm btn-ghost text-error" onclick={disconnect}>断开</button>
   </div>
 {:else}
   <div class="fixed inset-0 bg-base-100/95 backdrop-blur-md flex items-center justify-center z-50">

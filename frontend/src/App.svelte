@@ -54,11 +54,11 @@
 {/if}
 
 <main class="h-screen flex flex-col overflow-hidden bg-base-100">
-  <header class="flex items-center gap-4 px-4 h-12 bg-base-200 border-b border-base-300 shrink-0 z-10">
+  <header class="flex items-center gap-4 px-4 h-14 bg-base-200 border-b border-base-300 shrink-0 z-10">
     <div class="flex items-center gap-2.5">
       <span class="w-2.5 h-2.5 rounded-full bg-success shadow-[0_0_8px_rgba(0,229,160,.5)]"></span>
       <span class="text-sm font-semibold text-success tracking-wider">GH-Terminal</span>
-      <button class="btn btn-ghost btn-xs text-base ml-2" onclick={toggleTheme} title="切换主题">
+      <button class="btn btn-ghost btn-sm text-base ml-2" onclick={toggleTheme} title="切换主题">
         {dark ? '☀' : '🌙'}
       </button>
     </div>

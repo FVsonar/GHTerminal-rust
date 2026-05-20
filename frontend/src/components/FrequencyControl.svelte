@@ -10,18 +10,18 @@
 </script>
 
 <div class="card bg-base-200 border border-base-300 shadow-sm p-3">
-  <span class="text-[10px] font-semibold text-base-content/50 uppercase tracking-widest mb-2.5 block">频率与模式</span>
+  <span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest mb-2.5 block">频率与模式</span>
   <div class="flex items-center gap-2 mb-2.5">
     <input type="text" class="input input-bordered flex-1 font-mono text-lg font-semibold text-success text-center tracking-wider" bind:value={fi} onkeydown={(e)=>{if(e.key==='Enter')sf()}} />
     <span class="text-xs text-base-content/50 font-medium">MHz</span>
   </div>
   <div class="grid grid-cols-4 gap-1 mb-2">
     {#each [[1,'+1K'],[10,'+10K'],[100,'+100K'],[1000,'+1M'],[-1,'-1K'],[-10,'-10K'],[-100,'-100K'],[-1000,'-1M']] as [k,l]}
-      <button class="btn btn-xs font-mono" onclick={()=>step(k)}>{l}</button>
+      <button class="btn btn-sm font-mono" onclick={()=>step(k)}>{l}</button>
     {/each}
   </div>
   <div class="grid grid-cols-6 gap-0.5 mb-2.5">
-    {#each BANDS as b}<button class="btn btn-xs text-[10px] font-medium" onclick={()=>band(b.v)}>{b.n}</button>{/each}
+    {#each BANDS as b}<button class="btn btn-sm text-[12px] font-medium" onclick={()=>band(b.v)}>{b.n}</button>{/each}
   </div>
   <div class="border-t border-base-300 pt-2.5">
     <div class="grid grid-cols-3 gap-1">
