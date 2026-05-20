@@ -29,6 +29,7 @@ pub fn handle_frame(frame: &Frame, handle: &tauri::AppHandle, state: &SharedStat
             0x27 => handle_device_type(&cmd.data, handle),
             0x39 => handle_spectrum_response(&cmd.data, handle, state),
             0x41 => handle_channel_read_response(&cmd.data, handle),
+            0x44 => handle_dmr_channel_read_response(&cmd.data, handle),
             0x2D => handle_meter_response(&cmd.data, handle, state),
             0x2E => handle_params_response(&cmd.data, handle, state),
             0x07..=0x0A
@@ -136,6 +137,42 @@ fn handle_params_response(data: &[u8], handle: &tauri::AppHandle, state: &Shared
         *p = params.clone();
     }
     let _ = handle.emit("radio-params", &params);
+}
+
+fn handle_dmr_channel_read_response(data: &[u8], handle: &tauri::AppHandle) {
+    if data.len() < 24 {
+        warn!("DMR channel read response too short: {}", data.len());
+        return;
+    }
+    let channel = ((data[0] as u16) << 8) | (data[1] as u16);
+    let call_format = data[2];
+    let tx_cc = data[3];
+    let rx_cc = data[4];
+    let slot = data[5];
+    let call_id = u32::from_be_bytes([data[6], data[7], data[8], data[9]]);
+    let own_id = u32::from_be_bytes([data[10], data[11], data[12], data[13]]);
+    let ch_type = data[14];
+    let rx_ctcss = data[15];
+    let tx_ctcss = data[16];
+    let sqlevel = data[17];
+    let spkgain = data[18];
+    let dmrexist = data[19];
+    let dmod_gain = data[20];
+    let scr_en = data[21];
+    let scr_seed = ((data[22] as u16) << 8) | (data[23] as u16);
+    let ch_bs_mode = data.get(24).copied().unwrap_or(0);
+    let validat = data.get(25).copied().unwrap_or(0);
+
+    info!("DMR channel {} read: call_id={} own_id={} slot={}", channel, call_id, own_id, slot);
+    let _ = handle.emit("dmr-channel-data", serde_json::json!({
+        "channel": channel,
+        "call_format": call_format, "tx_cc": tx_cc, "rx_cc": rx_cc,
+        "slot": slot, "call_id": call_id, "own_id": own_id,
+        "ch_type": ch_type, "rx_ctcss": rx_ctcss, "tx_ctcss": tx_ctcss,
+        "sqlevel": sqlevel, "spkgain": spkgain, "dmrexist": dmrexist,
+        "dmod_gain": dmod_gain, "scr_en": scr_en, "scr_seed": scr_seed,
+        "ch_bs_mode": ch_bs_mode, "validat": validat,
+    }));
 }
 
 fn handle_channel_read_response(data: &[u8], handle: &tauri::AppHandle) {
