@@ -14,6 +14,7 @@
   import NrNbControls from './components/NrNbControls.svelte';
   import SpectrumControls from './components/SpectrumControls.svelte';
   import CwControls from './components/CwControls.svelte';
+  import ChannelPanel from './components/ChannelPanel.svelte';
   import SpectrumCanvas from './canvas/SpectrumCanvas.svelte';
   import WaterfallCanvas from './canvas/WaterfallCanvas.svelte';
 
@@ -88,6 +89,7 @@
           <RfControls />
           <NrNbControls />
           <CwControls />
+          <ChannelPanel />
         </div>
       </div>
     </div>
