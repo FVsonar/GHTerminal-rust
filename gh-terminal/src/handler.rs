@@ -11,6 +11,7 @@ pub fn handle_frame(frame: &Frame, handle: &tauri::AppHandle, state: &SharedStat
             0x0B => handle_status_response(&cmd.data, handle, state),
             0x27 => handle_device_type(&cmd.data, handle),
             0x39 => handle_spectrum_response(&cmd.data, handle, state),
+            0x41 => handle_channel_read_response(&cmd.data, handle),
             0x2D => handle_meter_response(&cmd.data, handle, state),
             0x2E => handle_params_response(&cmd.data, handle, state),
             0x07..=0x0A
@@ -117,6 +118,35 @@ fn handle_params_response(data: &[u8], handle: &tauri::AppHandle, state: &Shared
         *p = params.clone();
     }
     let _ = handle.emit("radio-params", &params);
+}
+
+fn handle_channel_read_response(data: &[u8], handle: &tauri::AppHandle) {
+    if data.len() < 14 {
+        warn!("channel read response too short: {}", data.len());
+        return;
+    }
+    let channel = ((data[0] as u16) << 8) | (data[1] as u16);
+    let vfoa_mode = data[2];
+    let vfob_mode = data[3];
+    let vfoa_freq = u32::from_be_bytes([data[4], data[5], data[6], data[7]]);
+    let vfob_freq = u32::from_be_bytes([data[8], data[9], data[10], data[11]]);
+    let tx_ctcss = data[12];
+    let rx_ctcss = data[13];
+    let name_end = (14 + 12).min(data.len());
+    let name_bytes = &data[14..name_end];
+    let name = String::from_utf8_lossy(name_bytes).trim_end_matches('\0').to_string();
+
+    info!("Channel {} read: A={} {} B={} {} name={}", channel, vfoa_freq, vfoa_mode, vfob_freq, vfob_mode, name);
+    let _ = handle.emit("channel-data", serde_json::json!({
+        "channel": channel,
+        "vfoa_mode": vfoa_mode,
+        "vfob_mode": vfob_mode,
+        "vfoa_freq": vfoa_freq,
+        "vfob_freq": vfob_freq,
+        "tx_ctcss": tx_ctcss,
+        "rx_ctcss": rx_ctcss,
+        "name": name,
+    }));
 }
 
 fn handle_spectrum_response(data: &[u8], handle: &tauri::AppHandle, state: &SharedState) {

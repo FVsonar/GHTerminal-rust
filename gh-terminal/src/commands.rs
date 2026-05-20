@@ -215,6 +215,32 @@ fn parse_command(cmd: &str, d: &Value) -> Option<RadioCommand> {
                 _ => return None,
             },
         },
+        "channel_read" => RadioCommand::ReadChannel {
+            channel: d.get("channel").and_then(|v| v.as_u64()).unwrap_or(0) as u16,
+        },
+        "channel_write" => {
+            let ch = d.get("channel").and_then(|v| v.as_u64()).unwrap_or(0) as u16;
+            let name_bytes = d.get("name").and_then(|v| v.as_str()).unwrap_or("");
+            let mut name = [0u8; 12];
+            let nlen = name_bytes.len().min(12);
+            name[..nlen].copy_from_slice(&name_bytes.as_bytes()[..nlen]);
+            RadioCommand::WriteChannel {
+                channel: ch,
+                vfoa_mode: Mode::from_u8(d.get("vfoa_mode").and_then(|v| v.as_u64()).unwrap_or(0) as u8).unwrap_or(Mode::Usb),
+                vfob_mode: Mode::from_u8(d.get("vfob_mode").and_then(|v| v.as_u64()).unwrap_or(0) as u8).unwrap_or(Mode::Usb),
+                vfoa_freq: d.get("vfoa_freq").and_then(|v| v.as_u64()).unwrap_or(0) as u32,
+                vfob_freq: d.get("vfob_freq").and_then(|v| v.as_u64()).unwrap_or(0) as u32,
+                tx_ctcss: d.get("tx_ctcss").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
+                rx_ctcss: d.get("rx_ctcss").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
+                name,
+            }
+        },
+        "channel_mode" => RadioCommand::SetChannelMode {
+            mode: match d.get("mode").and_then(|v| v.as_u64()).unwrap_or(0) {
+                0 => ChannelMode::Vfo,
+                _ => ChannelMode::Channel,
+            },
+        },
         "status_request" => RadioCommand::StatusRequest,
         "params_request" => RadioCommand::ParamsRequest,
         "meter_request" => RadioCommand::MeterRequest,
