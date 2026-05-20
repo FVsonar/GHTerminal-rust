@@ -147,10 +147,10 @@
       <thead class="sticky top-0 z-10">
         <tr class="bg-base-300 text-base-content/50 text-[11px] uppercase tracking-wide">
           <th class="py-1.5 px-1 text-center font-medium w-7">#</th>
-          <th class="py-1.5 px-1 text-left font-medium w-16">名称</th>
-          <th class="py-1.5 px-1 text-right font-medium w-[72px]">VFOA</th>
+          <th class="py-1.5 px-1 text-center font-medium w-16">名称</th>
+          <th class="py-1.5 px-1 text-center font-medium w-[72px]">VFOA</th>
           <th class="py-1.5 px-1 text-center font-medium w-8">M</th>
-          <th class="py-1.5 px-1 text-right font-medium w-[72px]">VFOB</th>
+          <th class="py-1.5 px-1 text-center font-medium w-[72px]">VFOB</th>
           <th class="py-1.5 px-1 text-center font-medium w-8">M</th>
           <th class="py-1.5 px-1 text-center font-medium w-[44px]">TX亚音</th>
           <th class="py-1.5 px-1 text-center font-medium w-[44px]">RX亚音</th>
@@ -210,8 +210,8 @@
           <th class="py-1.5 px-1 text-center font-medium">TxCC</th>
           <th class="py-1.5 px-1 text-center font-medium">RxCC</th>
           <th class="py-1.5 px-1 text-center font-medium">slot</th>
-          <th class="py-1.5 px-1 text-right font-medium">Call ID</th>
-          <th class="py-1.5 px-1 text-right font-medium">Own ID</th>
+          <th class="py-1.5 px-1 text-center font-medium">Call ID</th>
+          <th class="py-1.5 px-1 text-center font-medium">Own ID</th>
           <th class="py-1.5 px-1 text-center font-medium">typ</th>
           <th class="py-1.5 px-1 text-center font-medium">SQL</th>
           <th class="py-1.5 px-1 text-center font-medium">Gain</th>
