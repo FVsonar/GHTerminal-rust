@@ -1,14 +1,26 @@
 <script>
+  import { invoke } from '@tauri-apps/api/core';
   import { sendCommand } from '../lib/tauri-bridge.js';
   import { radioParams, radioStatus } from '../lib/store.js';
   import { SPECTRUM_SPANS, DISPLAY_MODES } from '../lib/radio-types.js';
+  import ToggleSwitch from './ToggleSwitch.svelte';
 
   let p = $derived($radioParams);
   let s = $derived($radioStatus);
+  let specOn = $state(true);
+
+  function toggleSpectrum(on) {
+    specOn = on;
+    invoke('set_poll_toggle', { poll: 'spectrum', on });
+  }
 </script>
 
 <div class="spectrum-ctrl">
   <div class="ctrl-row">
+    <div class="ctrl-item" style="flex:0 0 auto; min-width:36px;">
+      <label>轮询</label>
+      <ToggleSwitch on={specOn} ontoggle={toggleSpectrum} />
+    </div>
     <div class="ctrl-item">
       <label>SPAN</label>
       <select value={s.span} onchange={(e) => sendCommand('set_spectrum_span', { span: parseInt(e.target.value) })}>
