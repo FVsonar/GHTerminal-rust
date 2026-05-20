@@ -2,104 +2,25 @@
   import { sendCommand } from '../lib/tauri-bridge.js';
   import { radioStatus } from '../lib/store.js';
   import { BANDS } from '../lib/radio-types.js';
-
-  let s = $derived($radioStatus);
-  let freqInput = $state('');
-  let activeFreq = $derived(s.v === 0 ? s.fA : s.fB);
-
-  $effect(() => {
-    freqInput = (activeFreq / 1_000_000).toFixed(6);
-  });
-
-  function setFreq() {
-    const mhz = parseFloat(freqInput);
-    if (isNaN(mhz) || mhz <= 0 || mhz > 2000) return;
-    sendCommand('set_frequency', { freq: Math.round(mhz * 1_000_000) });
-  }
-
-  function step(khz) {
-    const cur = parseFloat(freqInput) || 0;
-    freqInput = (cur + khz / 1000).toFixed(6);
-    setFreq();
-  }
-
-  function onKeydown(e) { if (e.key === 'Enter') setFreq(); }
-
-  function setBand(v) {
-    const freqMap = [1.8, 3.5, 5, 7, 10, 14, 18, 21, 24, 28, 50, 144, 430];
-    freqInput = freqMap[v].toFixed(6);
-    sendCommand('set_frequency', { freq: Math.round(freqMap[v] * 1_000_000) });
-  }
+  let s = $derived($radioStatus); let fi = $state(''); let af = $derived(s.v===0?s.fA:s.fB);
+  $effect(()=>{fi=(af/1_000_000).toFixed(6)});
+  function sf(){const m=parseFloat(fi);if(isNaN(m)||m<=0||m>2000)return;sendCommand('set_frequency',{freq:Math.round(m*1_000_000)});}
+  function step(k){const c=parseFloat(fi)||0;fi=(c+k/1000).toFixed(6);sf();}
+  function band(v){const fm=[1.8,3.5,5,7,10,14,18,21,24,28,50,144,430];fi=fm[v].toFixed(6);sendCommand('set_frequency',{freq:Math.round(fm[v]*1_000_000)});}
 </script>
 
-<div class="panel freq-panel">
-  <div class="panel-title">频率控制</div>
-
-  <div class="freq-input-row">
-    <input type="text" bind:value={freqInput} onkeydown={onKeydown} class="freq-input" />
-    <span class="freq-mhz">MHz</span>
+<div class="card bg-base-200 border border-base-300 shadow-sm p-3">
+  <span class="text-[10px] font-semibold text-base-content/50 uppercase tracking-widest mb-2.5 block">频率控制</span>
+  <div class="flex items-center gap-2 mb-2.5">
+    <input type="text" class="input input-bordered flex-1 font-mono text-lg font-semibold text-success text-center tracking-wider" bind:value={fi} onkeydown={(e)=>{if(e.key==='Enter')sf()}} />
+    <span class="text-xs text-base-content/50 font-medium">MHz</span>
   </div>
-
-  <div class="step-grid">
-    <button onclick={() => step(1000)}>+1M</button>
-    <button onclick={() => step(100)}>+100K</button>
-    <button onclick={() => step(10)}>+10K</button>
-    <button onclick={() => step(1)}>+1K</button>
-    <button onclick={() => step(-1000)}>-1M</button>
-    <button onclick={() => step(-100)}>-100K</button>
-    <button onclick={() => step(-10)}>-10K</button>
-    <button onclick={() => step(-1)}>-1K</button>
-  </div>
-
-  <div class="band-grid">
-    {#each BANDS as b}
-      <button class="band-btn" onclick={() => setBand(b.v)}>{b.n}</button>
+  <div class="grid grid-cols-4 gap-1 mb-2">
+    {#each [[1,'+1K'],[10,'+10K'],[100,'+100K'],[1000,'+1M'],[-1,'-1K'],[-10,'-10K'],[-100,'-100K'],[-1000,'-1M']] as [k,l]}
+      <button class="btn btn-xs font-mono" onclick={()=>step(k)}>{l}</button>
     {/each}
   </div>
+  <div class="grid grid-cols-6 gap-0.5">
+    {#each BANDS as b}<button class="btn btn-xs text-[10px] font-medium" onclick={()=>band(b.v)}>{b.n}</button>{/each}
+  </div>
 </div>
-
-<style>
-  .freq-input-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-  .freq-input {
-    flex: 1;
-    font-family: var(--font-mono) !important;
-    font-size: 18px !important;
-    font-weight: 600;
-    text-align: center;
-    letter-spacing: 1px;
-    color: var(--accent-green) !important;
-  }
-  .freq-mhz {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-weight: 500;
-  }
-
-  .step-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-    margin-bottom: 8px;
-  }
-  .step-grid button {
-    padding: 5px 2px;
-    font-size: 11px;
-    font-family: var(--font-mono);
-  }
-
-  .band-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 3px;
-  }
-  .band-btn {
-    padding: 5px 2px;
-    font-size: 10px;
-    font-weight: 500;
-  }
-</style>

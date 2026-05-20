@@ -1,53 +1,32 @@
 <script>
   import { sendCommand } from '../lib/tauri-bridge.js';
-  const KEY_TYPES = ['AUTO-L', 'AUTO-R', 'KEY'];
-
-  let sidetoneVol = $state(8);
-  let sidetoneFreq = $state(60);
-  let txDelay = $state(10);
-  let keySpeed = $state(20);
-  let cwTraining = $state(false);
-  let cwDecode = $state(false);
-  let cwDecodeThr = $state(10);
+  const KT = ['AUTO-L','AUTO-R','KEY'];
+  let sv=$state(8),sf=$state(60),td=$state(10),ks=$state(20),tr=$state(false),dc=$state(false),dt=$state(10);
 </script>
 
-<div class="panel">
-  <div class="panel-title">CW</div>
-
-  <label>电键</label>
-  <div class="flex-row" style="margin-bottom:6px;">
-    {#each KEY_TYPES as name, i}
-      <button onclick={() => sendCommand('set_key_type', { key_type: i })} style="flex:1;font-size:10px;">{name}</button>
-    {/each}
+<div class="card bg-base-200 border border-base-300 shadow-sm p-3">
+  <span class="text-[10px] font-semibold text-base-content/50 uppercase tracking-widest mb-2.5 block">CW</span>
+  <span class="text-[10px] font-medium text-base-content/60 block mb-1">电键</span>
+  <div class="flex gap-1 mb-1.5">
+    {#each KT as n,i}<button class="btn btn-xs flex-1 text-[10px]" onclick={()=>sendCommand('set_key_type',{key_type:i})}>{n}</button>{/each}
   </div>
-
-  {@render slider("侧音音量", sidetoneVol, 0, 15, (v) => { sidetoneVol = v; sendCommand('set_sidetone_vol', { vol: v }); })}
-  {@render slider("侧音频率", sidetoneFreq, 40, 200, (v) => { sidetoneFreq = v; sendCommand('set_sidetone_freq', { freq: v }); })}
-  {@render slider("收发延时", txDelay, 0, 50, (v) => { txDelay = v; sendCommand('set_txrx_delay', { delay: v }); })}
-  {@render slider("自动键速", keySpeed, 5, 48, (v) => { keySpeed = v; sendCommand('set_key_speed', { speed: v }); })}
-  {@render slider("解码阈值", cwDecodeThr, 1, 50, (v) => { cwDecodeThr = v; sendCommand('set_cw_decode_threshold', { value: v }); })}
-
-  <div class="flex-row" style="margin-top:4px;">
-    <button class:active={cwTraining} onclick={() => { cwTraining = !cwTraining; sendCommand('set_cw_training', { on: cwTraining }); }} style="flex:1;">
-      {cwTraining ? '练习ON' : '练习OFF'}
-    </button>
-    <button class:active={cwDecode} onclick={() => { cwDecode = !cwDecode; sendCommand('set_cw_decode', { on: cwDecode }); }} style="flex:1;">
-      {cwDecode ? '解码ON' : '解码OFF'}
-    </button>
+  {@render slider("侧音音量",sv,0,15,(v)=>{sv=v;sendCommand('set_sidetone_vol',{vol:v})})}
+  {@render slider("侧音频率",sf,40,200,(v)=>{sf=v;sendCommand('set_sidetone_freq',{freq:v})})}
+  {@render slider("收发延时",td,0,50,(v)=>{td=v;sendCommand('set_txrx_delay',{delay:v})})}
+  {@render slider("自动键速",ks,5,48,(v)=>{ks=v;sendCommand('set_key_speed',{speed:v})})}
+  {@render slider("解码阈值",dt,1,50,(v)=>{dt=v;sendCommand('set_cw_decode_threshold',{value:v})})}
+  <div class="flex gap-1">
+    <button class="btn btn-xs flex-1 {tr?'btn-primary':'btn-ghost'}" onclick={()=>{tr=!tr;sendCommand('set_cw_training',{on:tr})}}>{tr?'练习ON':'练习OFF'}</button>
+    <button class="btn btn-xs flex-1 {dc?'btn-primary':'btn-ghost'}" onclick={()=>{dc=!dc;sendCommand('set_cw_decode',{on:dc})}}>{dc?'解码ON':'解码OFF'}</button>
   </div>
 </div>
 
-{#snippet slider(label, value, min, max, onChange)}
-<div class="slider-row">
-  <label>{label}</label>
-  <span class="slider-val">{value}</span>
-  <input type="range" {min} {max} {value} oninput={(e) => onChange(parseInt(e.target.value))} />
+{#snippet slider(label,value,min,max,onChange)}
+<div class="mb-1">
+  <div class="flex justify-between items-baseline mb-1">
+    <span class="text-[10px] font-medium text-base-content/60">{label}</span>
+    <span class="font-mono text-[11px] font-semibold">{value}</span>
+  </div>
+  <input type="range" class="range range-xs range-primary" {min} {max} {value} oninput={(e)=>onChange(parseInt(e.target.value))} />
 </div>
 {/snippet}
-
-<style>
-  .slider-row { margin-bottom: 2px; }
-  .slider-row label { margin-bottom: 0; font-size: 10px; display: inline; }
-  .slider-val { float: right; font-family: var(--font-mono); font-size: 11px; color: var(--text-primary); }
-  input[type="range"] { margin: 2px 0 6px 0; }
-</style>

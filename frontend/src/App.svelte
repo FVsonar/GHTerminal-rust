@@ -30,27 +30,24 @@
       onEvent('spectrum-data', (d) => spectrumData.set({ data: new Uint8Array(d), timestamp: Date.now() })),
       onEvent('radio-error', () => {}),
     ]).then(fns => { unlisteners = fns; });
-
     return () => unlisteners.forEach(fn => fn());
   });
 </script>
 
-<!-- 未连接遮罩 -->
 {#if !$connectionStatus.connected}
   <SerialConnect />
 {/if}
 
-<main class="app-shell">
-  <!-- 顶部栏 -->
-  <header class="header">
-    <div class="header-left">
-      <div class="logo-dot"></div>
-      <span class="logo-text">GH-Terminal</span>
+<main class="h-screen flex flex-col overflow-hidden bg-base-100">
+  <header class="flex items-center gap-4 px-4 h-12 bg-base-200 border-b border-base-300 shrink-0 z-10">
+    <div class="flex items-center gap-2.5">
+      <span class="w-2.5 h-2.5 rounded-full bg-success shadow-[0_0_8px_rgba(0,229,160,.5)]"></span>
+      <span class="text-sm font-semibold text-success tracking-wider">GH-Terminal</span>
     </div>
     {#if $connectionStatus.connected}
       <StatusBar />
     {/if}
-    <div class="header-right">
+    <div class="ml-auto flex items-center">
       {#if $connectionStatus.connected}
         <SerialConnect />
       {/if}
@@ -58,28 +55,23 @@
   </header>
 
   {#if $connectionStatus.connected}
-    <div class="main-area">
-      <!-- 仪表行 -->
-      <div class="meter-row">
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <div class="px-4 pt-2 pb-0 shrink-0">
         <MeterDisplay />
       </div>
 
-      <!-- 频谱 -->
-      <div class="spectrum-section">
-        <div class="spectrum-canvas-wrap">
+      <div class="px-4 pt-1 pb-2 shrink-0 flex flex-col gap-0.5">
+        <div class="h-[110px] bg-black rounded-md overflow-hidden border border-base-300">
           <SpectrumCanvas />
         </div>
-        <div class="waterfall-canvas-wrap">
+        <div class="h-[45px] bg-black rounded-md overflow-hidden border border-base-300">
           <WaterfallCanvas />
         </div>
-        <div class="spectrum-ctrl-wrap">
-          <SpectrumControls />
-        </div>
+        <SpectrumControls />
       </div>
 
-      <!-- 控制面板 -->
-      <div class="controls-scroll">
-        <div class="controls-grid">
+      <div class="flex-1 overflow-y-auto px-4 pb-3 pt-1">
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(248px,1fr))] gap-2">
           <FrequencyControl />
           <ModeSelector />
           <PttButton />
@@ -93,120 +85,9 @@
       </div>
     </div>
   {:else}
-    <div class="placeholder-screen">
-      <div class="placeholder-icon">📡</div>
-      <p>请连接电台设备</p>
+    <div class="flex-1 flex flex-col items-center justify-center text-base-content/50 gap-3">
+      <span class="text-6xl opacity-50">📡</span>
+      <p class="text-base">请连接电台设备</p>
     </div>
   {/if}
 </main>
-
-<style>
-  .app-shell {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-  }
-
-  .header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 0 16px;
-    height: 48px;
-    background: var(--bg-panel);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-    z-index: 10;
-  }
-
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .logo-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--accent-green);
-    box-shadow: 0 0 8px rgba(0,229,160,0.5);
-  }
-
-  .logo-text {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--accent-green);
-    letter-spacing: 1px;
-  }
-
-  .header-right {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-  }
-
-  .main-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  /* 仪表行 */
-  .meter-row {
-    padding: 8px 16px 4px;
-    flex-shrink: 0;
-  }
-
-  /* 频谱区域 */
-  .spectrum-section {
-    padding: 4px 16px 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    flex-shrink: 0;
-  }
-  .spectrum-canvas-wrap {
-    height: 110px;
-    background: #000;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
-  .waterfall-canvas-wrap {
-    height: 45px;
-    background: #000;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
-  .spectrum-ctrl-wrap {
-    margin-top: 4px;
-  }
-
-  /* 控制面板滚动区 */
-  .controls-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 4px 16px 12px;
-  }
-  .controls-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
-    gap: 8px;
-  }
-
-  .placeholder-screen {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-muted);
-    gap: 14px;
-  }
-  .placeholder-icon { font-size: 56px; opacity: 0.6; }
-  .placeholder-screen p { font-size: 15px; }
-</style>
