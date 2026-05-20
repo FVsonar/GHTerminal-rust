@@ -87,14 +87,14 @@
         <SpectrumControls />
       </div>
       <div class="flex-1 overflow-y-auto px-4 pb-3 pt-1">
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(248px,1fr))] gap-2">
-          <FrequencyControl />
+        <div class="grid grid-cols-3 gap-2">
+          <div class="col-span-3"><ChannelPanel /></div>
+          <div class="col-span-2"><FrequencyControl /></div>
           <VfoPanel />
           <AudioControls />
           <RfControls />
           <NrNbControls />
           <CwControls />
-          <ChannelPanel />
         </div>
       </div>
     </div>
