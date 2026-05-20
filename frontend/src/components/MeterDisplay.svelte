@@ -1,20 +1,29 @@
 <script>
+  import { invoke } from '@tauri-apps/api/core';
   import { sMeterValue, poMeterValue, meterData } from '../lib/store.js';
+  import ToggleSwitch from './ToggleSwitch.svelte';
 
   let sMeter = $derived($sMeterValue);
   let poMeter = $derived($poMeterValue);
   let m = $derived($meterData);
+  let meterOn = $state(true);
 
   let swrVal = $derived((m.swr & 0xC0) === 0x00 ? m.swr & 0x3F : 0);
   let alcVal = $derived((m.swr & 0xC0) === 0x40 ? m.swr & 0x3F : 0);
 
   function pct(v, max) { return Math.min(100, (v / max) * 100); }
 
-  const S_LEVELS = ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','+10','+20','+30'];
+  function toggleMeter(on) {
+    meterOn = on;
+    invoke('set_poll_toggle', { poll: 'meter', on });
+  }
 </script>
 
 <div class="meter-row">
-  <!-- S 表 -->
+  <div class="row-header">
+    <span class="row-title">仪表</span>
+    <ToggleSwitch on={meterOn} ontoggle={toggleMeter} />
+  </div>
   <div class="meter-block">
     <div class="meter-label-row">
       <span class="meter-name">S</span>
@@ -63,6 +72,20 @@
 </div>
 
 <style>
+  .row-header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+  }
+  .row-title {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
   .meter-row {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr;

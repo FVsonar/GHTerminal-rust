@@ -17,7 +17,6 @@
   import SpectrumControls from './components/SpectrumControls.svelte';
   import CwControls from './components/CwControls.svelte';
   import TunerControl from './components/TunerControl.svelte';
-  import PollControls from './components/PollControls.svelte';
   import SpectrumCanvas from './canvas/SpectrumCanvas.svelte';
   import WaterfallCanvas from './canvas/WaterfallCanvas.svelte';
 
@@ -53,8 +52,6 @@
     {/if}
     <div class="header-right">
       {#if $connectionStatus.connected}
-        <PollControls />
-        <div class="header-divider"></div>
         <SerialConnect />
       {/if}
     </div>
@@ -212,5 +209,4 @@
   }
   .placeholder-icon { font-size: 56px; opacity: 0.6; }
   .placeholder-screen p { font-size: 15px; }
-  .header-divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
 </style>
