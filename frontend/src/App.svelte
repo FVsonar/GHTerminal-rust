@@ -53,6 +53,8 @@
     {/if}
     <div class="header-right">
       {#if $connectionStatus.connected}
+        <PollControls />
+        <div class="header-divider"></div>
         <SerialConnect />
       {/if}
     </div>
@@ -88,7 +90,6 @@
           <AudioControls />
           <RfControls />
           <NrNbControls />
-          <PollControls />
           <TunerControl />
           <CwControls />
         </div>
@@ -211,4 +212,5 @@
   }
   .placeholder-icon { font-size: 56px; opacity: 0.6; }
   .placeholder-screen p { font-size: 15px; }
+  .header-divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
 </style>
