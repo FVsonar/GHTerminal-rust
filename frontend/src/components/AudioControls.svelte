@@ -11,14 +11,12 @@
     <span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest">AF 音频</span>
     <input type="checkbox" class="toggle toggle-sm toggle-success" checked={on} onchange={(e)=>toggle(e.target.checked)} />
   </div>
-  {#if on}
   {@render slider("扬声器",p.sv,0,30,(v)=>sendCommand('set_speaker_vol',{vol:v}))}
   {@render slider("耳机",p.hv,0,80,(v)=>sendCommand('set_headphone_vol',{vol:v}))}
   {@render slider("MIC增益",p.mg,0,100,(v)=>sendCommand('set_mic_gain',{gain:v}))}
   {@render slider("压扩比",p.cmp,0,14,(v)=>sendCommand('set_compandor',{ratio:v}))}
   {@render slider("低音EQ",p.bass,0,40,(v)=>sendCommand('set_bass_eq',{value:v}))}
   {@render slider("高音EQ",p.treb,0,40,(v)=>sendCommand('set_treble_eq',{value:v}))}
-  {/if}
 </div>
 
 {#snippet slider(label,value,min,max,onChange)}

@@ -16,7 +16,6 @@
     <input type="checkbox" class="toggle toggle-sm toggle-success" checked={on} onchange={(e)=>toggle(e.target.checked)} />
   </div>
 
-  {#if on}
   <!-- VFO -->
   <div>
     <span class="text-[12px] font-medium text-base-content/50 uppercase tracking-wide mb-1.5 block">VFO 通道</span>
@@ -54,5 +53,4 @@
       {/each}
     </div>
   </div>
-  {/if}
 </div>
