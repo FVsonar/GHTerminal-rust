@@ -91,28 +91,27 @@ async fn poller_task(_handle: tauri::AppHandle, state: SharedState, cmd_tx: mpsc
     let mut spectrum_tick = tokio::time::interval(Duration::from_millis(80));
 
     loop {
-        let poll = state.poll_state.lock().await.clone();
         tokio::select! {
             _ = tick.tick() => {
-                if poll.status {
+                if state.poll_state.lock().await.status {
                     let cmd = RadioCommand::StatusRequest.encode().encode();
                     let _ = cmd_tx.send(cmd).await;
                 }
             }
             _ = meter_tick.tick() => {
-                if poll.meter {
+                if state.poll_state.lock().await.meter {
                     let cmd = RadioCommand::MeterRequest.encode().encode();
                     let _ = cmd_tx.send(cmd).await;
                 }
             }
             _ = params_tick.tick() => {
-                if poll.params {
+                if state.poll_state.lock().await.params {
                     let cmd = RadioCommand::ParamsRequest.encode().encode();
                     let _ = cmd_tx.send(cmd).await;
                 }
             }
             _ = spectrum_tick.tick() => {
-                if poll.spectrum {
+                if state.poll_state.lock().await.spectrum {
                     let cmd = RadioCommand::SpectrumRequest.encode().encode();
                     let _ = cmd_tx.send(cmd).await;
                 }
