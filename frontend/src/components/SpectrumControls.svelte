@@ -12,6 +12,7 @@
     <span class="text-[13px] text-base-content/50 uppercase">轮询</span>
     <input type="checkbox" class="toggle toggle-sm toggle-success" checked={on} onchange={(e)=>toggle(e.target.checked)} />
   </div>
+  {#if on}
   <div class="flex-1 min-w-0 flex flex-col">
     <span class="text-[13px] text-base-content/50 mb-0.5">SPAN</span>
     <select class="select select-sm select-bordered w-full text-[13px]" value={s.span} onchange={(e)=>sendCommand('set_spectrum_span',{span:parseInt(e.target.value)})}>
@@ -32,4 +33,5 @@
     <span class="text-[13px] text-base-content/50">速率 {p.spd||5}</span>
     <input type="range" class="range range-sm range-primary" min="1" max="30" value={p.spd||5} oninput={(e)=>sendCommand('set_spectrum_speed',{value:parseInt(e.target.value)})} />
   </div>
+  {/if}
 </div>
