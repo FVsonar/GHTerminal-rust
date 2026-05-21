@@ -17,6 +17,7 @@
     <span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest">频率与模式</span>
     <input type="checkbox" class="toggle toggle-sm toggle-success" checked={on} onchange={(e)=>toggle(e.target.checked)} />
   </div>
+  {#if on}
   <div class="flex items-center gap-2 mb-2.5">
     <input type="text" class="input input-bordered flex-1 font-mono text-lg font-semibold text-success text-center tracking-wider" bind:value={fi} onkeydown={(e)=>{if(e.key==='Enter')sf()}} />
     <span class="text-xs text-base-content/50 font-medium">MHz</span>
@@ -36,4 +37,5 @@
       {/each}
     </div>
   </div>
+  {/if}
 </div>

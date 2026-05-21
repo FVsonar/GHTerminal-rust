@@ -14,6 +14,7 @@
     <span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest">仪表</span>
     <input type="checkbox" class="toggle toggle-sm toggle-success" checked={meterOn} onchange={(e)=>toggle(e.target.checked)} />
   </div>
+  {#if meterOn}
   <div class="grid grid-cols-[2fr_1fr_1fr_1fr] gap-2">
     {#each [{label:'S',val:sM,cls:'from-success via-warning to-error'},{label:'PO',val:pM,cls:'bg-error'},{label:'SWR',val:swr,cls:'bg-warning'},{label:'ALC',val:alc,cls:'bg-secondary'}] as it}
     <div class="min-w-0">
@@ -28,4 +29,5 @@
     </div>
     {/each}
   </div>
+  {/if}
 </div>
