@@ -109,7 +109,6 @@
 
 <div class="card bg-base-200 border border-base-300 shadow-sm p-3">
   <div class="flex items-center justify-between mb-2.5"><span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest">信道管理 (0-999)</span><input type="checkbox" class="toggle toggle-sm toggle-success" checked={chOn} onchange={(e)=>toggleCh(e.target.checked)} /></div>
-  {#if chOn}
 
   <!-- Tab + 模式 -->
   <div class="flex items-end gap-2 mb-2.5">
@@ -279,5 +278,4 @@
     </table>
     {/if}
   </div>
-  {/if}
 </div>

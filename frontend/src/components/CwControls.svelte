@@ -4,11 +4,11 @@
   const KT = ['AUTO-L','AUTO-R','KEY'];
   let sv=$state(8),sf=$state(60),td=$state(10),ks=$state(20),tr=$state(false),dc=$state(false),dt=$state(10);
   let on = $state(true);
+  function toggle(v){on=v;invoke('set_poll_toggle',{poll:'cw',on:v});}
 </script>
 
 <div class="card bg-base-200 border border-base-300 shadow-sm p-3">
   <div class="flex items-center justify-between mb-2.5 pb-1.5 border-b border-base-300"><span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest">CW</span><input type="checkbox" class="toggle toggle-sm toggle-success" checked={on} onchange={(e)=>toggle(e.target.checked)} /></div>
-  {#if on}
   <span class="text-[12px] font-medium text-base-content/60 block mb-1">电键</span>
   <div class="flex gap-1 mb-1.5">
     {#each KT as n,i}<button class="btn btn-sm flex-1 text-[12px]" onclick={()=>sendCommand('set_key_type',{key_type:i})}>{n}</button>{/each}
@@ -22,7 +22,6 @@
     <button class="btn btn-sm flex-1 {tr?'btn-primary':'btn-ghost'}" onclick={()=>{tr=!tr;sendCommand('set_cw_training',{on:tr})}}>{tr?'练习ON':'练习OFF'}</button>
     <button class="btn btn-sm flex-1 {dc?'btn-primary':'btn-ghost'}" onclick={()=>{dc=!dc;sendCommand('set_cw_decode',{on:dc})}}>{dc?'解码ON':'解码OFF'}</button>
   </div>
-  {/if}
 </div>
 
 {#snippet slider(label,value,min,max,onChange)}
