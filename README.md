@@ -45,6 +45,11 @@ cargo tauri build
 
 - `doc/国赫电台设备控制协议.md`
 
+## 项目文档（Docs/Wiki）
+
+- 本仓库使用 GitHub Pages 发布 `docs/` 目录内容（用于替代/承载 Wiki 内容）。
+- 入口文件：`docs/index.md`
+
 > 说明：如果你在终端里看到中文乱码，通常是控制台编码（Code Page）或文件编码显示方式导致；在编辑器（VS Code 等）中打开会更直观。
 
 ## 常见问题
