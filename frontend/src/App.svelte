@@ -54,11 +54,11 @@
 {/if}
 
 <main class="h-screen flex flex-col overflow-hidden bg-base-100">
-  <header class="flex items-center gap-4 px-4 h-14 bg-base-200 border-b border-base-300 shrink-0 z-10">
+  <header class="flex items-center gap-4 px-5 h-16 bg-base-200 border-b border-base-300 shrink-0 z-10">
     <div class="flex items-center gap-2.5">
       <span class="w-2.5 h-2.5 rounded-full bg-success shadow-[0_0_8px_rgba(0,229,160,.5)]"></span>
-      <span class="text-sm font-semibold text-success tracking-wider">GH-Terminal</span>
-      <button class="btn btn-ghost btn-sm text-base ml-2" onclick={toggleTheme} title="切换主题">
+      <span class="text-base font-semibold text-success tracking-wider">GH-Terminal</span>
+      <button class="btn btn-ghost btn-sm text-lg ml-2" onclick={toggleTheme} title="切换主题">
         {dark ? '☀' : '🌙'}
       </button>
     </div>
@@ -74,20 +74,20 @@
 
   {#if $connectionStatus.connected}
     <div class="flex-1 flex flex-col overflow-hidden">
-      <div class="px-4 pt-2 pb-0 shrink-0">
+      <div class="px-5 pt-3 pb-0 shrink-0">
         <MeterDisplay />
       </div>
-      <div class="px-4 pt-1 pb-2 shrink-0 flex flex-col gap-0.5">
-        <div class="h-[110px] bg-black rounded-md overflow-hidden border border-base-300">
+      <div class="px-5 pt-1.5 pb-2.5 shrink-0 flex flex-col gap-1">
+        <div class="h-[140px] bg-black rounded-md overflow-hidden border border-base-300">
           <SpectrumCanvas />
         </div>
-        <div class="h-[45px] bg-black rounded-md overflow-hidden border border-base-300">
+        <div class="h-[55px] bg-black rounded-md overflow-hidden border border-base-300">
           <WaterfallCanvas />
         </div>
         <SpectrumControls />
       </div>
-      <div class="flex-1 overflow-y-auto px-4 pb-3 pt-1">
-        <div class="grid grid-cols-3 gap-2">
+      <div class="flex-1 overflow-y-auto px-5 pb-4 pt-1.5">
+        <div class="grid grid-cols-3 gap-3">
           <div class="col-span-3"><ChannelPanel /></div>
           <div class="col-span-2"><FrequencyControl /></div>
           <VfoPanel />
@@ -101,12 +101,12 @@
   {:else}
     <div class="flex-1 flex flex-col items-center justify-center text-base-content/50 gap-3">
       <span class="text-6xl opacity-50">📡</span>
-      <p class="text-base">请连接电台设备</p>
+      <p class="text-lg">请连接电台设备</p>
     </div>
   {/if}
 
   {#if toast}
-    <div class="fixed bottom-4 right-4 z-50 transition-all duration-200 {toast.ok ? 'text-success' : 'text-error'} bg-base-200 border {toast.ok ? 'border-success/30' : 'border-error/30'} rounded-lg px-4 py-2 shadow-lg text-sm font-mono">
+    <div class="fixed bottom-5 right-5 z-50 transition-all duration-200 {toast.ok ? 'text-success' : 'text-error'} bg-base-200 border {toast.ok ? 'border-success/30' : 'border-error/30'} rounded-lg px-5 py-2.5 shadow-lg text-base font-mono">
       {toast.text}
     </div>
   {/if}

@@ -107,56 +107,56 @@
   function fmtFreq(hz) { return hz ? (hz / 1_000_000).toFixed(5) : ''; }
 </script>
 
-<div class="card bg-base-200 border border-base-300 shadow-sm p-3">
-  <div class="flex items-center justify-between mb-2.5"><span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest">信道管理 (0-999)</span><input type="checkbox" class="toggle toggle-sm toggle-success" checked={chOn} onchange={(e)=>toggleCh(e.target.checked)} /></div>
+<div class="card bg-base-200 border border-base-300 shadow-sm p-4">
+  <div class="flex items-center justify-between mb-3"><span class="text-sm font-semibold text-base-content/50 uppercase tracking-widest">信道管理 (0-999)</span><input type="checkbox" class="toggle toggle-success" checked={chOn} onchange={(e)=>toggleCh(e.target.checked)} /></div>
 
   <!-- Tab + 模式 -->
-  <div class="flex items-end gap-2 mb-2.5">
+  <div class="flex items-end gap-3 mb-3">
     <div class="flex gap-1">
-      <button class="btn btn-sm text-[13px] {tab==='analog'?'btn-primary':'btn-ghost'}" onclick={()=>{tab='analog';page=0;pageInput='0'}}>模拟</button>
-      <button class="btn btn-sm text-[13px] {tab==='dmr'?'btn-primary':'btn-ghost'}" onclick={()=>{tab='dmr';page=0;pageInput='0'}}>DMR</button>
+      <button class="btn btn-sm text-base {tab==='analog'?'btn-primary':'btn-ghost'}" onclick={()=>{tab='analog';page=0;pageInput='0'}}>模拟</button>
+      <button class="btn btn-sm text-base {tab==='dmr'?'btn-primary':'btn-ghost'}" onclick={()=>{tab='dmr';page=0;pageInput='0'}}>DMR</button>
     </div>
     <div class="flex items-end gap-1.5 ml-auto">
       <div>
-        <span class="text-[11px] text-base-content/50 block mb-0.5">模式</span>
+        <span class="text-xs text-base-content/50 block mb-0.5">模式</span>
         <div class="flex gap-1">
-          <button class="btn btn-sm text-[13px] {chMode===0?'btn-primary':'btn-ghost'}" onclick={()=>setMode(0)}>VFO</button>
-          <button class="btn btn-sm text-[13px] {chMode===1?'btn-primary':'btn-ghost'}" onclick={()=>setMode(1)}>信道</button>
+          <button class="btn btn-sm text-base {chMode===0?'btn-primary':'btn-ghost'}" onclick={()=>setMode(0)}>VFO</button>
+          <button class="btn btn-sm text-base {chMode===1?'btn-primary':'btn-ghost'}" onclick={()=>setMode(1)}>信道</button>
         </div>
       </div>
     </div>
-    <button class="btn btn-sm btn-primary" onclick={readPage} disabled={reading}>
+    <button class="btn btn-sm btn-primary text-base" onclick={readPage} disabled={reading}>
       {reading ? `读取中 ${readProgress}/${end-start}` : `读第${page}页`}
     </button>
-    <button class="btn btn-sm btn-success btn-ghost" onclick={writePage}>写本页</button>
+    <button class="btn btn-sm btn-success btn-ghost text-base" onclick={writePage}>写本页</button>
   </div>
 
   <!-- 分页 -->
-  <div class="flex items-center justify-center gap-1.5 mb-2">
+  <div class="flex items-center justify-center gap-2 mb-2.5">
     <button class="btn btn-sm btn-ghost" onclick={()=>goPage(0)} disabled={page===0}>«</button>
     <button class="btn btn-sm btn-ghost" onclick={()=>goPage(page-1)} disabled={page===0}>‹</button>
-    <input type="number" class="input input-sm input-bordered w-12 text-center font-mono text-xs" bind:value={pageInput} min="0" max={totalPages-1} onkeydown={(e)=>{if(e.key==='Enter')goPage(parseInt(pageInput)||0)}} />
-    <span class="text-[13px] text-base-content/50">/ {totalPages - 1}</span>
+    <input type="number" class="input input-bordered w-14 text-center font-mono text-sm" bind:value={pageInput} min="0" max={totalPages-1} onkeydown={(e)=>{if(e.key==='Enter')goPage(parseInt(pageInput)||0)}} />
+    <span class="text-base text-base-content/50">/ {totalPages - 1}</span>
     <button class="btn btn-sm btn-ghost" onclick={()=>goPage(page+1)} disabled={page>=totalPages-1}>›</button>
     <button class="btn btn-sm btn-ghost" onclick={()=>goPage(totalPages-1)} disabled={page>=totalPages-1}>»</button>
-    <span class="text-[13px] text-base-content/40 ml-2">#{start}-#{end-1}</span>
+    <span class="text-base text-base-content/40 ml-2">#{start}-#{end-1}</span>
   </div>
 
   <!-- 表格 -->
-  <div class="overflow-auto max-h-[360px] rounded-md border border-base-300">
+  <div class="overflow-auto max-h-[520px] rounded-md border border-base-300">
     {#if tab === 'analog'}
-    <table class="w-full text-[13px] border-collapse">
+    <table class="w-full text-base border-collapse">
       <thead class="sticky top-0 z-10">
-        <tr class="bg-base-300 text-base-content/50 text-[11px] uppercase tracking-wide">
-          <th class="py-1.5 px-1 text-center font-medium w-7">#</th>
-          <th class="py-1.5 px-1 text-center font-medium w-16">名称</th>
-          <th class="py-1.5 px-1 text-center font-medium w-[72px]">VFOA</th>
-          <th class="py-1.5 px-1 text-center font-medium w-8">M</th>
-          <th class="py-1.5 px-1 text-center font-medium w-[72px]">VFOB</th>
-          <th class="py-1.5 px-1 text-center font-medium w-8">M</th>
-          <th class="py-1.5 px-1 text-center font-medium w-[44px]">TX亚音</th>
-          <th class="py-1.5 px-1 text-center font-medium w-[44px]">RX亚音</th>
-          <th class="py-1.5 px-1 text-center font-medium w-12">操作</th>
+        <tr class="bg-base-300 text-base-content/50 text-xs uppercase tracking-wide">
+          <th class="py-2 px-1 text-center font-medium w-8">#</th>
+          <th class="py-2 px-1 text-center font-medium w-20">名称</th>
+          <th class="py-2 px-1 text-center font-medium w-[92px]">VFOA</th>
+          <th class="py-2 px-1 text-center font-medium w-10">M</th>
+          <th class="py-2 px-1 text-center font-medium w-[92px]">VFOB</th>
+          <th class="py-2 px-1 text-center font-medium w-10">M</th>
+          <th class="py-2 px-1 text-center font-medium w-[56px]">TX亚音</th>
+          <th class="py-2 px-1 text-center font-medium w-[56px]">RX亚音</th>
+          <th class="py-2 px-1 text-center font-medium w-14">操作</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-base-300">
@@ -165,38 +165,38 @@
           {@const c = channels[chNum]}
           {@const isEdit = editing?.ch === chNum}
           <tr class="hover:bg-base-300/30 transition-colors {c ? '' : 'opacity-50'}">
-            <td class="py-0.5 px-1 text-center font-mono text-base-content/40 text-[12px]">{chNum}</td>
+            <td class="py-0.5 px-1 text-center font-mono text-base-content/40 text-sm">{chNum}</td>
             <td class="py-0.5 px-1" onclick={()=>startEdit(chNum, 'name', c?.name)}>
-              {#if isEdit && editing.field === 'name'}<input type="text" class="input input-sm input-bordered w-full text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} maxlength="12" autofocus />
-              {:else}<span class="cursor-pointer truncate block max-w-[72px] {c?.name?'font-medium':''}">{c?.name || '—'}</span>{/if}
+              {#if isEdit && editing.field === 'name'}<input type="text" class="input input-bordered w-full text-center text-sm" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} maxlength="12" autofocus />
+              {:else}<span class="cursor-pointer truncate block max-w-[92px] {c?.name?'font-medium':''}">{c?.name || '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'freq_a', fmtFreq(c?.vfoa_freq))}>
-              {#if isEdit && editing.field === 'freq_a'}<input type="text" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
+              {#if isEdit && editing.field === 'freq_a'}<input type="text" class="input input-bordered w-full font-mono text-center text-sm" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
               {:else}<span class="cursor-pointer font-mono {c?'text-success':''}">{c ? fmtFreq(c.vfoa_freq) : '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'mode_a', c?.vfoa_mode)}>
-              {#if isEdit && editing.field === 'mode_a'}<select class="select select-sm select-bordered w-full text-[12px]" bind:value={editVal} onchange={commitEdit}>{#each MODE_LIST as m}<option value={m.v}>{m.n}</option>{/each}</select>
+              {#if isEdit && editing.field === 'mode_a'}<select class="select select-bordered w-full text-sm" bind:value={editVal} onchange={commitEdit}>{#each MODE_LIST as m}<option value={m.v}>{m.n}</option>{/each}</select>
               {:else}<span class="cursor-pointer">{c ? modeName(c.vfoa_mode) : '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'freq_b', fmtFreq(c?.vfob_freq))}>
-              {#if isEdit && editing.field === 'freq_b'}<input type="text" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
+              {#if isEdit && editing.field === 'freq_b'}<input type="text" class="input input-bordered w-full font-mono text-center text-sm" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
               {:else}<span class="cursor-pointer font-mono {c?'text-success':''}">{c ? fmtFreq(c.vfob_freq) : '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'mode_b', c?.vfob_mode)}>
-              {#if isEdit && editing.field === 'mode_b'}<select class="select select-sm select-bordered w-full text-[12px]" bind:value={editVal} onchange={commitEdit}>{#each MODE_LIST as m}<option value={m.v}>{m.n}</option>{/each}</select>
+              {#if isEdit && editing.field === 'mode_b'}<select class="select select-bordered w-full text-sm" bind:value={editVal} onchange={commitEdit}>{#each MODE_LIST as m}<option value={m.v}>{m.n}</option>{/each}</select>
               {:else}<span class="cursor-pointer">{c ? modeName(c.vfob_mode) : '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center font-mono" onclick={()=>startEdit(chNum, 'ctcss_tx', c?.tx_ctcss)}>
-              {#if isEdit && editing.field === 'ctcss_tx'}<input type="number" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="55" autofocus />
-              {:else}<span class="cursor-pointer text-[12px]" title={ctcssName(c?.tx_ctcss||0)}>{c ? ctcssName(c.tx_ctcss) : '—'}</span>{/if}
+              {#if isEdit && editing.field === 'ctcss_tx'}<input type="number" class="input input-bordered w-full font-mono text-center text-sm" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="55" autofocus />
+              {:else}<span class="cursor-pointer text-sm" title={ctcssName(c?.tx_ctcss||0)}>{c ? ctcssName(c.tx_ctcss) : '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center font-mono" onclick={()=>startEdit(chNum, 'ctcss_rx', c?.rx_ctcss)}>
-              {#if isEdit && editing.field === 'ctcss_rx'}<input type="number" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="55" autofocus />
-              {:else}<span class="cursor-pointer text-[12px]" title={ctcssName(c?.rx_ctcss||0)}>{c ? ctcssName(c.rx_ctcss) : '—'}</span>{/if}
+              {#if isEdit && editing.field === 'ctcss_rx'}<input type="number" class="input input-bordered w-full font-mono text-center text-sm" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="55" autofocus />
+              {:else}<span class="cursor-pointer text-sm" title={ctcssName(c?.rx_ctcss||0)}>{c ? ctcssName(c.rx_ctcss) : '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center">
-              <button class="btn btn-sm btn-ghost text-[12px] px-1 h-6" onclick={()=>readChannel(chNum)}>R</button>
-              <button class="btn btn-sm btn-ghost text-[12px] px-1 h-6 {c?'text-success':''}" onclick={()=>writeChannel(chNum)} disabled={!c}>W</button>
+              <button class="btn btn-sm btn-ghost text-sm px-1 h-7" onclick={()=>readChannel(chNum)}>R</button>
+              <button class="btn btn-sm btn-ghost text-sm px-1 h-7 {c?'text-success':''}" onclick={()=>writeChannel(chNum)} disabled={!c}>W</button>
             </td>
           </tr>
         {/each}
@@ -204,21 +204,21 @@
     </table>
     {:else}
     <!-- DMR 表格 -->
-    <table class="w-full text-[13px] border-collapse">
+    <table class="w-full text-base border-collapse">
       <thead class="sticky top-0 z-10">
-        <tr class="bg-base-300 text-base-content/50 text-[11px] uppercase tracking-wide">
-          <th class="py-1.5 px-1 text-center font-medium w-7">#</th>
-          <th class="py-1.5 px-1 text-center font-medium">fmt</th>
-          <th class="py-1.5 px-1 text-center font-medium">TxCC</th>
-          <th class="py-1.5 px-1 text-center font-medium">RxCC</th>
-          <th class="py-1.5 px-1 text-center font-medium">slot</th>
-          <th class="py-1.5 px-1 text-center font-medium">Call ID</th>
-          <th class="py-1.5 px-1 text-center font-medium">Own ID</th>
-          <th class="py-1.5 px-1 text-center font-medium">typ</th>
-          <th class="py-1.5 px-1 text-center font-medium">SQL</th>
-          <th class="py-1.5 px-1 text-center font-medium">Gain</th>
-          <th class="py-1.5 px-1 text-center font-medium">BS</th>
-          <th class="py-1.5 px-1 text-center font-medium w-12">操作</th>
+        <tr class="bg-base-300 text-base-content/50 text-xs uppercase tracking-wide">
+          <th class="py-2 px-1 text-center font-medium w-8">#</th>
+          <th class="py-2 px-1 text-center font-medium">fmt</th>
+          <th class="py-2 px-1 text-center font-medium">TxCC</th>
+          <th class="py-2 px-1 text-center font-medium">RxCC</th>
+          <th class="py-2 px-1 text-center font-medium">slot</th>
+          <th class="py-2 px-1 text-center font-medium">Call ID</th>
+          <th class="py-2 px-1 text-center font-medium">Own ID</th>
+          <th class="py-2 px-1 text-center font-medium">typ</th>
+          <th class="py-2 px-1 text-center font-medium">SQL</th>
+          <th class="py-2 px-1 text-center font-medium">Gain</th>
+          <th class="py-2 px-1 text-center font-medium">BS</th>
+          <th class="py-2 px-1 text-center font-medium w-14">操作</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-base-300">
@@ -227,50 +227,50 @@
           {@const c = dmrChannels[chNum]}
           {@const isEdit = editing?.ch === chNum}
           <tr class="hover:bg-base-300/30 transition-colors {c ? '' : 'opacity-50'}">
-            <td class="py-0.5 px-1 text-center font-mono text-base-content/40 text-[12px]">{chNum}</td>
+            <td class="py-0.5 px-1 text-center font-mono text-base-content/40 text-sm">{chNum}</td>
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'call_format', c?.call_format)}>
-              {#if isEdit && editing.field==='call_format'}<input type="number" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="2" autofocus />
+              {#if isEdit && editing.field==='call_format'}<input type="number" class="input input-bordered w-full font-mono text-center text-sm" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="2" autofocus />
               {:else}<span class="cursor-pointer">{c?.call_format ?? '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'tx_cc', c?.tx_cc)}>
-              {#if isEdit && editing.field==='tx_cc'}<input type="number" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="15" autofocus />
+              {#if isEdit && editing.field==='tx_cc'}<input type="number" class="input input-bordered w-full font-mono text-center text-sm" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="15" autofocus />
               {:else}<span class="cursor-pointer">{c?.tx_cc ?? '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'rx_cc', c?.rx_cc)}>
-              {#if isEdit && editing.field==='rx_cc'}<input type="number" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="15" autofocus />
+              {#if isEdit && editing.field==='rx_cc'}<input type="number" class="input input-bordered w-full font-mono text-center text-sm" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="15" autofocus />
               {:else}<span class="cursor-pointer">{c?.rx_cc ?? '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'slot', c?.slot)}>
-              {#if isEdit && editing.field==='slot'}<input type="number" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="1" max="2" autofocus />
+              {#if isEdit && editing.field==='slot'}<input type="number" class="input input-bordered w-full font-mono text-center text-sm" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="1" max="2" autofocus />
               {:else}<span class="cursor-pointer">{c?.slot ?? '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center font-mono" onclick={()=>startEdit(chNum, 'call_id', c?.call_id)}>
-              {#if isEdit && editing.field==='call_id'}<input type="number" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
+              {#if isEdit && editing.field==='call_id'}<input type="number" class="input input-bordered w-full font-mono text-center text-sm" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
               {:else}<span class="cursor-pointer">{c?.call_id ?? '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center font-mono" onclick={()=>startEdit(chNum, 'own_id', c?.own_id)}>
-              {#if isEdit && editing.field==='own_id'}<input type="number" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
+              {#if isEdit && editing.field==='own_id'}<input type="number" class="input input-bordered w-full font-mono text-center text-sm" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} autofocus />
               {:else}<span class="cursor-pointer">{c?.own_id ?? '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'ch_type', c?.ch_type)}>
-              {#if isEdit && editing.field==='ch_type'}<input type="number" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="1" autofocus />
+              {#if isEdit && editing.field==='ch_type'}<input type="number" class="input input-bordered w-full font-mono text-center text-sm" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="1" autofocus />
               {:else}<span class="cursor-pointer">{c?.ch_type ?? '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'sqlevel', c?.sqlevel)}>
-              {#if isEdit && editing.field==='sqlevel'}<input type="number" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="1" max="5" autofocus />
+              {#if isEdit && editing.field==='sqlevel'}<input type="number" class="input input-bordered w-full font-mono text-center text-sm" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="1" max="5" autofocus />
               {:else}<span class="cursor-pointer">{c?.sqlevel ?? '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'spkgain', c?.spkgain)}>
-              {#if isEdit && editing.field==='spkgain'}<input type="number" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="10" autofocus />
+              {#if isEdit && editing.field==='spkgain'}<input type="number" class="input input-bordered w-full font-mono text-center text-sm" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="10" autofocus />
               {:else}<span class="cursor-pointer">{c?.spkgain ?? '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center" onclick={()=>startEdit(chNum, 'ch_bs_mode', c?.ch_bs_mode)}>
-              {#if isEdit && editing.field==='ch_bs_mode'}<input type="number" class="input input-sm input-bordered w-full font-mono text-center" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="1" autofocus />
+              {#if isEdit && editing.field==='ch_bs_mode'}<input type="number" class="input input-bordered w-full font-mono text-center text-sm" bind:value={editVal} onkeydown={handleEditKey} onblur={commitEdit} min="0" max="1" autofocus />
               {:else}<span class="cursor-pointer">{c?.ch_bs_mode ?? '—'}</span>{/if}
             </td>
             <td class="py-0.5 px-1 text-center">
-              <button class="btn btn-sm btn-ghost text-[12px] px-1 h-6" onclick={()=>readChannel(chNum)}>R</button>
-              <button class="btn btn-sm btn-ghost text-[12px] px-1 h-6 {c?'text-success':''}" onclick={()=>writeChannel(chNum)} disabled={!c}>W</button>
+              <button class="btn btn-sm btn-ghost text-sm px-1 h-7" onclick={()=>readChannel(chNum)}>R</button>
+              <button class="btn btn-sm btn-ghost text-sm px-1 h-7 {c?'text-success':''}" onclick={()=>writeChannel(chNum)} disabled={!c}>W</button>
             </td>
           </tr>
         {/each}

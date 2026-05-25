@@ -3,8 +3,8 @@
 
   let canvas;
   let ctx;
-  let width = 600;
-  let height = 45;
+  let width = 1024;
+  let height = 55;
   let historyRows = [];
 
   $effect(() => { ctx = canvas?.getContext('2d'); if (ctx) resetCanvas(); });

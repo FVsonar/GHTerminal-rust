@@ -37,36 +37,36 @@
 
 {#if status.connected}
   <div class="flex items-center gap-2">
-    <span class="w-1.5 h-1.5 rounded-full bg-success shadow-[0_0_5px_var(--color-success)]"></span>
-    <span class="font-mono text-xs text-success">{status.port}</span>
-    <button class="btn btn-sm btn-ghost text-error" onclick={disconnect}>断开</button>
+    <span class="w-2 h-2 rounded-full bg-success shadow-[0_0_5px_var(--color-success)]"></span>
+    <span class="font-mono text-sm text-success">{status.port}</span>
+    <button class="btn btn-sm btn-ghost text-error text-sm" onclick={disconnect}>断开</button>
   </div>
 {:else}
   <div class="fixed inset-0 bg-base-100/95 backdrop-blur-md flex items-center justify-center z-50">
-    <div class="card bg-base-200 border border-base-300 shadow-2xl p-10 w-[420px] max-w-[92vw] text-center">
-      <span class="text-5xl mb-3 block">📡</span>
-      <h2 class="text-xl font-semibold mb-1">连接电台设备</h2>
-      <p class="text-sm text-base-content/60 mb-6">选择串口并点击连接</p>
-      <div class="flex gap-3 mb-4">
+    <div class="card bg-base-200 border border-base-300 shadow-2xl p-12 w-[480px] max-w-[92vw] text-center">
+      <span class="text-6xl mb-4 block">📡</span>
+      <h2 class="text-2xl font-semibold mb-2">连接电台设备</h2>
+      <p class="text-base text-base-content/60 mb-8">选择串口并点击连接</p>
+      <div class="flex gap-4 mb-5">
         <div class="flex-1 text-left">
-          <label class="label-text text-xs uppercase tracking-wider text-base-content/60 mb-1 block">端口</label>
+          <label class="label-text text-sm uppercase tracking-wider text-base-content/60 mb-1.5 block">端口</label>
           <div class="flex gap-1">
-            <select class="select select-sm select-bordered w-full" bind:value={selectedPort}>
+            <select class="select select-bordered w-full text-base" bind:value={selectedPort}>
               {#if ports.length===0}<option value="">未检测到串口</option>{/if}
               {#each ports as p}<option value={p.name}>{p.name}</option>{/each}
             </select>
-            <button class="btn btn-sm btn-ghost text-lg px-2" onclick={refreshPorts}>↻</button>
+            <button class="btn btn-ghost text-xl px-2" onclick={refreshPorts}>↻</button>
           </div>
         </div>
         <div class="flex-1 text-left">
-          <label class="label-text text-xs uppercase tracking-wider text-base-content/60 mb-1 block">波特率</label>
-          <select class="select select-sm select-bordered w-full" bind:value={selectedBaud}>
+          <label class="label-text text-sm uppercase tracking-wider text-base-content/60 mb-1.5 block">波特率</label>
+          <select class="select select-bordered w-full text-base" bind:value={selectedBaud}>
             {#each BAUD_RATES as b}<option value={b}>{b}</option>{/each}
           </select>
         </div>
       </div>
-      {#if errorMsg}<div class="alert alert-error alert-soft text-sm mb-3">{errorMsg}</div>{/if}
-      <button class="btn btn-success btn-wide text-base font-bold" onclick={connect} disabled={connecting||!selectedPort}>
+      {#if errorMsg}<div class="alert alert-error alert-soft text-base mb-4">{errorMsg}</div>{/if}
+      <button class="btn btn-success btn-wide text-lg font-bold" onclick={connect} disabled={connecting||!selectedPort}>
         {connecting?'连接中...':'连接'}
       </button>
     </div>
