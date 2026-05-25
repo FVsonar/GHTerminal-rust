@@ -1,8 +1,8 @@
+use serde::Serialize;
 use std::collections::VecDeque;
 use std::sync::Arc;
-use tokio::sync::{mpsc, Mutex, oneshot};
+use tokio::sync::{mpsc, oneshot, Mutex};
 use tokio::task::JoinHandle;
-use serde::Serialize;
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -83,10 +83,22 @@ pub struct RadioParams {
 impl Default for RadioParams {
     fn default() -> Self {
         Self {
-            sv: 20, hv: 40, mg: 50, cmp: 7,
-            bass: 20, treb: 20, rfg: 60, ifg: 40,
-            sql: 5, agc: 3, amp: 0, nr: 0, nb: 0,
-            pk: 10, spectrum_ref: 10, spd: 5,
+            sv: 20,
+            hv: 40,
+            mg: 50,
+            cmp: 7,
+            bass: 20,
+            treb: 20,
+            rfg: 60,
+            ifg: 40,
+            sql: 5,
+            agc: 3,
+            amp: 0,
+            nr: 0,
+            nb: 0,
+            pk: 10,
+            spectrum_ref: 10,
+            spd: 5,
         }
     }
 }
@@ -116,7 +128,14 @@ pub struct PollState {
 
 impl Default for PollState {
     fn default() -> Self {
-        Self { status: true, meter: true, params: true, spectrum: true, cw: true, channel: true }
+        Self {
+            status: true,
+            meter: true,
+            params: true,
+            spectrum: true,
+            cw: true,
+            channel: true,
+        }
     }
 }
 

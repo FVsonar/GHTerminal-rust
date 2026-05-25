@@ -1,14 +1,14 @@
-use std::sync::Arc;
 use serde::Serialize;
 use serde_json::Value;
+use std::sync::Arc;
 use tauri::{Emitter, State};
 use tokio::sync::oneshot;
 use tracing::{info, warn};
 
-use gh_protocol::RadioCommand;
 use gh_protocol::types::*;
+use gh_protocol::RadioCommand;
 
-use crate::state::{AppState, RadioStatus, RadioParams, MeterData, SerialConfig};
+use crate::state::{AppState, MeterData, RadioParams, RadioStatus, SerialConfig};
 
 #[derive(Debug, Serialize)]
 pub struct SerialPortInfo {
@@ -73,7 +73,10 @@ pub async fn connect_serial(
 
     *state.serial_abort.lock().await = Some(abort_handle);
 
-    let _ = app.emit("serial-status", serde_json::json!({"connected": true, "port": &port}));
+    let _ = app.emit(
+        "serial-status",
+        serde_json::json!({"connected": true, "port": &port}),
+    );
     Ok(())
 }
 
@@ -227,15 +230,21 @@ fn parse_command(cmd: &str, d: &Value) -> Option<RadioCommand> {
             name[..nlen].copy_from_slice(&name_bytes.as_bytes()[..nlen]);
             RadioCommand::WriteChannel {
                 channel: ch,
-                vfoa_mode: Mode::from_u8(d.get("vfoa_mode").and_then(|v| v.as_u64()).unwrap_or(0) as u8).unwrap_or(Mode::Usb),
-                vfob_mode: Mode::from_u8(d.get("vfob_mode").and_then(|v| v.as_u64()).unwrap_or(0) as u8).unwrap_or(Mode::Usb),
+                vfoa_mode: Mode::from_u8(
+                    d.get("vfoa_mode").and_then(|v| v.as_u64()).unwrap_or(0) as u8
+                )
+                .unwrap_or(Mode::Usb),
+                vfob_mode: Mode::from_u8(
+                    d.get("vfob_mode").and_then(|v| v.as_u64()).unwrap_or(0) as u8
+                )
+                .unwrap_or(Mode::Usb),
                 vfoa_freq: d.get("vfoa_freq").and_then(|v| v.as_u64()).unwrap_or(0) as u32,
                 vfob_freq: d.get("vfob_freq").and_then(|v| v.as_u64()).unwrap_or(0) as u32,
                 tx_ctcss: d.get("tx_ctcss").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
                 rx_ctcss: d.get("rx_ctcss").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
                 name,
             }
-        },
+        }
         "dmr_channel_read" => RadioCommand::ReadDmrChannel {
             channel: d.get("channel").and_then(|v| v.as_u64()).unwrap_or(0) as u16,
         },
@@ -261,7 +270,7 @@ fn parse_command(cmd: &str, d: &Value) -> Option<RadioCommand> {
                 ch_bs_mode: d.get("ch_bs_mode").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
                 validat: d.get("validat").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
             }
-        },
+        }
         "channel_mode" => RadioCommand::SetChannelMode {
             mode: match d.get("mode").and_then(|v| v.as_u64()).unwrap_or(0) {
                 0 => ChannelMode::Vfo,
@@ -281,27 +290,37 @@ fn parse_command(cmd: &str, d: &Value) -> Option<RadioCommand> {
 /// 命令所属轮询类别
 fn cmd_category(cmd: &str) -> &'static str {
     match cmd {
-        "ptt" | "set_frequency" | "set_mode" | "set_ab" | "set_split" | "set_band"
-        | "set_rit" | "set_xit" | "set_channel_mode" | "status_request" => "status",
+        "ptt" | "set_frequency" | "set_mode" | "set_ab" | "set_split" | "set_band" | "set_rit"
+        | "set_xit" | "set_channel_mode" | "status_request" => "status",
         "meter_request" => "meter",
         "set_speaker_vol" | "set_headphone_vol" | "set_mic_gain" | "set_compandor"
-        | "set_bass_eq" | "set_treble_eq" | "set_rfg" | "set_ifg" | "set_sql"
-        | "set_agc" | "set_amp" | "set_filter" | "set_nr" | "set_nb"
-        | "set_nr_threshold" | "set_nb_threshold" | "set_peak_threshold"
-        | "set_power_level" | "set_high_low_power" | "params_request" => "params",
-        "set_spectrum_span" | "set_spectrum_ref" | "set_spectrum_speed"
-        | "set_display_mode" | "spectrum_request" => "spectrum",
-        "set_key_type" | "set_sidetone_vol" | "set_sidetone_freq"
-        | "set_txrx_delay" | "set_key_speed" | "set_cw_training"
-        | "set_cw_decode" | "set_cw_decode_threshold" | "set_usb_data_format" => "cw",
-        "channel_read" | "channel_write" | "dmr_channel_read"
-        | "dmr_channel_write" => "channel",
+        | "set_bass_eq" | "set_treble_eq" | "set_rfg" | "set_ifg" | "set_sql" | "set_agc"
+        | "set_amp" | "set_filter" | "set_nr" | "set_nb" | "set_nr_threshold"
+        | "set_nb_threshold" | "set_peak_threshold" | "set_power_level" | "set_high_low_power"
+        | "params_request" => "params",
+        "set_spectrum_span" | "set_spectrum_ref" | "set_spectrum_speed" | "set_display_mode"
+        | "spectrum_request" => "spectrum",
+        "set_key_type"
+        | "set_sidetone_vol"
+        | "set_sidetone_freq"
+        | "set_txrx_delay"
+        | "set_key_speed"
+        | "set_cw_training"
+        | "set_cw_decode"
+        | "set_cw_decode_threshold"
+        | "set_usb_data_format" => "cw",
+        "channel_read" | "channel_write" | "dmr_channel_read" | "dmr_channel_write" => "channel",
         _ => "",
     }
 }
 
 #[tauri::command]
-pub async fn send_command(app: tauri::AppHandle, cmd: String, data: Value, state: State<'_, Arc<AppState>>) -> Result<(), String> {
+pub async fn send_command(
+    app: tauri::AppHandle,
+    cmd: String,
+    data: Value,
+    state: State<'_, Arc<AppState>>,
+) -> Result<(), String> {
     // 检查开关
     let cat = cmd_category(&cmd);
     if !cat.is_empty() {
@@ -324,7 +343,11 @@ pub async fn send_command(app: tauri::AppHandle, cmd: String, data: Value, state
     let radio_cmd = parse_command(&cmd, &data).ok_or_else(|| format!("Invalid command: {cmd}"))?;
     let cbyte = radio_cmd.cmd_byte();
     let bytes = radio_cmd.encode().encode();
-    let hex: String = bytes.iter().map(|b| format!("{b:02X}")).collect::<Vec<_>>().join(" ");
+    let hex: String = bytes
+        .iter()
+        .map(|b| format!("{b:02X}"))
+        .collect::<Vec<_>>()
+        .join(" ");
     info!("CMD from UI: {cmd} → {hex}");
 
     const MAX_RETRIES: u32 = 3;
@@ -356,7 +379,9 @@ pub async fn send_command(app: tauri::AppHandle, cmd: String, data: Value, state
             _ => false,
         };
 
-        if success { break; }
+        if success {
+            break;
+        }
     }
 
     let _ = app.emit("cmd-result", serde_json::json!({"cmd": cmd, "ok": success}));
@@ -387,7 +412,9 @@ pub async fn set_poll_toggle(
 }
 
 #[tauri::command]
-pub async fn get_poll_state(state: State<'_, Arc<AppState>>) -> Result<crate::state::PollState, String> {
+pub async fn get_poll_state(
+    state: State<'_, Arc<AppState>>,
+) -> Result<crate::state::PollState, String> {
     Ok(state.poll_state.lock().await.clone())
 }
 
