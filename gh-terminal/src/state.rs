@@ -103,16 +103,10 @@ impl Default for RadioParams {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Default)]
 pub struct MeterData {
     pub sp: u8,
     pub swr: u8,
-}
-
-impl Default for MeterData {
-    fn default() -> Self {
-        Self { sp: 0, swr: 0 }
-    }
 }
 
 /// 轮询开关

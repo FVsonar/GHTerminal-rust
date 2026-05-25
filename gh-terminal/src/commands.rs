@@ -374,10 +374,10 @@ pub async fn send_command(
             }
         }
 
-        success = match tokio::time::timeout(std::time::Duration::from_millis(200), resp_rx).await {
-            Ok(Ok(true)) => true,
-            _ => false,
-        };
+        success = matches!(
+            tokio::time::timeout(std::time::Duration::from_millis(200), resp_rx).await,
+            Ok(Ok(true))
+        );
 
         if success {
             break;

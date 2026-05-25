@@ -506,7 +506,7 @@ impl RadioCommand {
                 rx_ctcss,
                 name,
             } => {
-                let ch = *channel as u16;
+                let ch = *channel;
                 data.push((ch >> 8) as u8);
                 data.push((ch & 0xFF) as u8);
                 data.push(*vfoa_mode as u8);
@@ -518,7 +518,7 @@ impl RadioCommand {
                 data.extend(name);
             }
             RadioCommand::ReadChannel { channel } => {
-                let ch = *channel as u16;
+                let ch = *channel;
                 data.push((ch >> 8) as u8);
                 data.push((ch & 0xFF) as u8);
             }
@@ -542,7 +542,7 @@ impl RadioCommand {
                 ch_bs_mode,
                 validat,
             } => {
-                let ch = *channel as u16;
+                let ch = *channel;
                 data.push((ch >> 8) as u8);
                 data.push((ch & 0xFF) as u8);
                 data.push(*call_format);
@@ -566,7 +566,7 @@ impl RadioCommand {
                 data.push(*validat);
             }
             RadioCommand::ReadDmrChannel { channel } => {
-                let ch = *channel as u16;
+                let ch = *channel;
                 data.push((ch >> 8) as u8);
                 data.push((ch & 0xFF) as u8);
             }
