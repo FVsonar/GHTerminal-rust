@@ -6,15 +6,15 @@
   "build": {
     "frontendDist": "../frontend/dist",
     "devUrl": "http://localhost:5173",
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build"
+    "beforeDevCommand": "npm --prefix ../frontend run dev",
+    "beforeBuildCommand": "npm --prefix ../frontend run build"
   },
   "app": {
     "windows": [
       {
         "title": "GH-Terminal 电台控制终端",
-        "width": 1280,
-        "height": 800,
+        "width": 1920,
+        "height": 1080,
         "resizable": true,
         "fullscreen": false
       }

@@ -12,27 +12,27 @@
   function toggle(v){on=v;invoke('set_poll_toggle',{poll:'status',on:v});}
 </script>
 
-<div class="card bg-base-200 border border-base-300 shadow-sm p-3">
-  <div class="flex items-center justify-between mb-2.5 pb-1.5 border-b border-base-300">
-    <span class="text-[12px] font-semibold text-base-content/50 uppercase tracking-widest">频率与模式</span>
-    <input type="checkbox" class="toggle toggle-sm toggle-success" checked={on} onchange={(e)=>toggle(e.target.checked)} />
+<div class="card bg-base-200 border border-base-300 shadow-sm p-4">
+  <div class="flex items-center justify-between mb-3 pb-2 border-b border-base-300">
+    <span class="text-sm font-semibold text-base-content/50 uppercase tracking-widest">频率与模式</span>
+    <input type="checkbox" class="toggle toggle-success" checked={on} onchange={(e)=>toggle(e.target.checked)} />
   </div>
-  <div class="flex items-center gap-2 mb-2.5">
-    <input type="text" class="input input-bordered flex-1 font-mono text-lg font-semibold text-success text-center tracking-wider" bind:value={fi} onkeydown={(e)=>{if(e.key==='Enter')sf()}} />
-    <span class="text-xs text-base-content/50 font-medium">MHz</span>
+  <div class="flex items-center gap-2 mb-3">
+    <input type="text" class="input input-bordered flex-1 font-mono text-xl font-semibold text-success text-center tracking-wider" bind:value={fi} onkeydown={(e)=>{if(e.key==='Enter')sf()}} />
+    <span class="text-sm text-base-content/50 font-medium">MHz</span>
   </div>
-  <div class="grid grid-cols-4 gap-1 mb-2">
+  <div class="grid grid-cols-4 gap-1 mb-2.5">
     {#each [[1,'+1K'],[10,'+10K'],[100,'+100K'],[1000,'+1M'],[-1,'-1K'],[-10,'-10K'],[-100,'-100K'],[-1000,'-1M']] as [k,l]}
-      <button class="btn btn-sm font-mono" onclick={()=>step(k)}>{l}</button>
+      <button class="btn btn-sm font-mono text-sm" onclick={()=>step(k)}>{l}</button>
     {/each}
   </div>
-  <div class="grid grid-cols-6 gap-0.5 mb-2.5">
-    {#each BANDS as b}<button class="btn btn-sm text-[12px] font-medium" onclick={()=>band(b.v)}>{b.n}</button>{/each}
+  <div class="grid grid-cols-6 gap-0.5 mb-3">
+    {#each BANDS as b}<button class="btn btn-sm text-sm font-medium" onclick={()=>band(b.v)}>{b.n}</button>{/each}
   </div>
-  <div class="border-t border-base-300 pt-2.5">
+  <div class="border-t border-base-300 pt-3">
     <div class="grid grid-cols-3 gap-1">
       {#each MODE_LIST as m}
-        <button class="btn btn-sm text-xs font-semibold tracking-wide {cm===m.v?'btn-primary':'btn-ghost'}" onclick={()=>sendCommand('set_mode',{mode:m.v})}>{m.n}</button>
+        <button class="btn btn-sm text-sm font-semibold tracking-wide {cm===m.v?'btn-primary':'btn-ghost'}" onclick={()=>sendCommand('set_mode',{mode:m.v})}>{m.n}</button>
       {/each}
     </div>
   </div>
