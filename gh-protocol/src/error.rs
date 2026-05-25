@@ -19,7 +19,10 @@ impl std::fmt::Display for ProtocolError {
         match self {
             ProtocolError::InvalidHeader => write!(f, "invalid packet header"),
             ProtocolError::CrcMismatch { expected, got } => {
-                write!(f, "CRC mismatch: expected 0x{expected:04X}, got 0x{got:04X}")
+                write!(
+                    f,
+                    "CRC mismatch: expected 0x{expected:04X}, got 0x{got:04X}"
+                )
             }
             ProtocolError::InvalidLength => write!(f, "invalid packet length"),
             ProtocolError::TruncatedPacket => write!(f, "truncated packet"),

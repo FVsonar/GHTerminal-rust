@@ -1,8 +1,8 @@
 use tauri::Emitter;
 use tracing::{debug, info, warn};
 
-use gh_protocol::Frame;
 use crate::state::SharedState;
+use gh_protocol::Frame;
 
 use crate::state::*;
 
@@ -25,29 +25,29 @@ pub fn handle_frame(frame: &Frame, handle: &tauri::AppHandle, state: &SharedStat
         Frame::Command(cmd) => {
             resolve_pending_cmd(cmd.cmd, state);
             match cmd.cmd {
-            0x0B => handle_status_response(&cmd.data, handle, state),
-            0x27 => handle_device_type(&cmd.data, handle),
-            0x39 => handle_spectrum_response(&cmd.data, handle, state),
-            0x41 => handle_channel_read_response(&cmd.data, handle),
-            0x44 => handle_dmr_channel_read_response(&cmd.data, handle),
-            0x2D => handle_meter_response(&cmd.data, handle, state),
-            0x2E => handle_params_response(&cmd.data, handle, state),
-            0x07..=0x0A
-            | 0x0D..=0x26
-            | 0x28..=0x2C
-            | 0x2F..=0x38
-            | 0x40..=0x45
-            | 0x49..=0x50
-            | 0x52
-            | 0x54..=0x64
-            | 0x67..=0x6C => {
-                debug!("command echo: 0x{:02X}", cmd.cmd);
+                0x0B => handle_status_response(&cmd.data, handle, state),
+                0x27 => handle_device_type(&cmd.data, handle),
+                0x39 => handle_spectrum_response(&cmd.data, handle, state),
+                0x41 => handle_channel_read_response(&cmd.data, handle),
+                0x44 => handle_dmr_channel_read_response(&cmd.data, handle),
+                0x2D => handle_meter_response(&cmd.data, handle, state),
+                0x2E => handle_params_response(&cmd.data, handle, state),
+                0x07..=0x0A
+                | 0x0D..=0x26
+                | 0x28..=0x2C
+                | 0x2F..=0x38
+                | 0x40..=0x45
+                | 0x49..=0x50
+                | 0x52
+                | 0x54..=0x64
+                | 0x67..=0x6C => {
+                    debug!("command echo: 0x{:02X}", cmd.cmd);
+                }
+                _ => {
+                    debug!("unhandled command: 0x{:02X}", cmd.cmd);
+                }
             }
-            _ => {
-                debug!("unhandled command: 0x{:02X}", cmd.cmd);
-            }
-            }
-        },
+        }
         Frame::Spectrum(spec) => {
             if let Ok(mut spectrum) = state.spectrum.try_lock() {
                 spectrum.latest = spec.data.clone();
@@ -163,16 +163,22 @@ fn handle_dmr_channel_read_response(data: &[u8], handle: &tauri::AppHandle) {
     let ch_bs_mode = data.get(24).copied().unwrap_or(0);
     let validat = data.get(25).copied().unwrap_or(0);
 
-    info!("DMR channel {} read: call_id={} own_id={} slot={}", channel, call_id, own_id, slot);
-    let _ = handle.emit("dmr-channel-data", serde_json::json!({
-        "channel": channel,
-        "call_format": call_format, "tx_cc": tx_cc, "rx_cc": rx_cc,
-        "slot": slot, "call_id": call_id, "own_id": own_id,
-        "ch_type": ch_type, "rx_ctcss": rx_ctcss, "tx_ctcss": tx_ctcss,
-        "sqlevel": sqlevel, "spkgain": spkgain, "dmrexist": dmrexist,
-        "dmod_gain": dmod_gain, "scr_en": scr_en, "scr_seed": scr_seed,
-        "ch_bs_mode": ch_bs_mode, "validat": validat,
-    }));
+    info!(
+        "DMR channel {} read: call_id={} own_id={} slot={}",
+        channel, call_id, own_id, slot
+    );
+    let _ = handle.emit(
+        "dmr-channel-data",
+        serde_json::json!({
+            "channel": channel,
+            "call_format": call_format, "tx_cc": tx_cc, "rx_cc": rx_cc,
+            "slot": slot, "call_id": call_id, "own_id": own_id,
+            "ch_type": ch_type, "rx_ctcss": rx_ctcss, "tx_ctcss": tx_ctcss,
+            "sqlevel": sqlevel, "spkgain": spkgain, "dmrexist": dmrexist,
+            "dmod_gain": dmod_gain, "scr_en": scr_en, "scr_seed": scr_seed,
+            "ch_bs_mode": ch_bs_mode, "validat": validat,
+        }),
+    );
 }
 
 fn handle_channel_read_response(data: &[u8], handle: &tauri::AppHandle) {
@@ -189,19 +195,27 @@ fn handle_channel_read_response(data: &[u8], handle: &tauri::AppHandle) {
     let rx_ctcss = data[13];
     let name_end = (14 + 12).min(data.len());
     let name_bytes = &data[14..name_end];
-    let name = String::from_utf8_lossy(name_bytes).trim_end_matches('\0').to_string();
+    let name = String::from_utf8_lossy(name_bytes)
+        .trim_end_matches('\0')
+        .to_string();
 
-    info!("Channel {} read: A={} {} B={} {} name={}", channel, vfoa_freq, vfoa_mode, vfob_freq, vfob_mode, name);
-    let _ = handle.emit("channel-data", serde_json::json!({
-        "channel": channel,
-        "vfoa_mode": vfoa_mode,
-        "vfob_mode": vfob_mode,
-        "vfoa_freq": vfoa_freq,
-        "vfob_freq": vfob_freq,
-        "tx_ctcss": tx_ctcss,
-        "rx_ctcss": rx_ctcss,
-        "name": name,
-    }));
+    info!(
+        "Channel {} read: A={} {} B={} {} name={}",
+        channel, vfoa_freq, vfoa_mode, vfob_freq, vfob_mode, name
+    );
+    let _ = handle.emit(
+        "channel-data",
+        serde_json::json!({
+            "channel": channel,
+            "vfoa_mode": vfoa_mode,
+            "vfob_mode": vfob_mode,
+            "vfoa_freq": vfoa_freq,
+            "vfob_freq": vfob_freq,
+            "tx_ctcss": tx_ctcss,
+            "rx_ctcss": rx_ctcss,
+            "name": name,
+        }),
+    );
 }
 
 fn handle_spectrum_response(data: &[u8], handle: &tauri::AppHandle, state: &SharedState) {

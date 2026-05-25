@@ -185,7 +185,7 @@ mod tests {
         // 新频谱响应 (0x39, 包长=0占位, 512字节数据)
         let mut spec = vec![0xA5, 0xA5, 0xA5, 0xA5, 0x00, 0x39]; // header + len=0 + cmd=0x39
         spec.extend([0x00; 512]); // 512 bytes spectrum
-        spec.extend([0x00; 2]);   // CRC placeholder
+        spec.extend([0x00; 2]); // CRC placeholder
 
         let mut combined = Vec::new();
         combined.extend(&cmd);

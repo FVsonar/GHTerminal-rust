@@ -41,7 +41,10 @@ pub async fn run_with_port(
                     }
                     Err(e) => {
                         error!("Serial read error: {e}");
-                        let _ = read_handle.emit("serial-status", serde_json::json!({"connected": false, "port": ""}));
+                        let _ = read_handle.emit(
+                            "serial-status",
+                            serde_json::json!({"connected": false, "port": ""}),
+                        );
                         return;
                     }
                 }
@@ -50,7 +53,11 @@ pub async fn run_with_port(
                 continue;
             }
             // 打印收到的原始字节
-            let hex: String = buf[..n].iter().map(|b| format!("{b:02X}")).collect::<Vec<_>>().join(" ");
+            let hex: String = buf[..n]
+                .iter()
+                .map(|b| format!("{b:02X}"))
+                .collect::<Vec<_>>()
+                .join(" ");
             info!("RAW [{n}]: {hex}");
             for frame_result in codec.feed(&buf[..n]) {
                 match frame_result {
@@ -68,7 +75,11 @@ pub async fn run_with_port(
     let write_port = shared_port.clone();
     tokio::spawn(async move {
         while let Some(data) = cmd_rx.recv().await {
-            let hex: String = data.iter().map(|b| format!("{b:02X}")).collect::<Vec<_>>().join(" ");
+            let hex: String = data
+                .iter()
+                .map(|b| format!("{b:02X}"))
+                .collect::<Vec<_>>()
+                .join(" ");
             info!("SERIAL WRITE [{len}]: {hex}", len = data.len());
             let mut port = write_port.lock().unwrap();
             if let Err(e) = port.write_all(&data) {

@@ -8,17 +8,23 @@ use crate::types::*;
 #[derive(Debug, Clone, PartialEq)]
 pub enum RadioCommand {
     // === 3.1 PTT 命令 ===
-    Ptt { pressed: bool },
+    Ptt {
+        pressed: bool,
+    },
 
     // === 3.2 频率设置命令 ===
     /// freq: 最大 2000000000 (2GHz), 4字节大端
-    SetFrequency { freq: u32 },
+    SetFrequency {
+        freq: u32,
+    },
 
     // === 3.3 模式设置命令 ===
-    SetMode { mode: Mode },
+    SetMode {
+        mode: Mode,
+    },
 
     // === 3.4 频谱数据命令 ===
-    SpectrumRequest,               // 0x39
+    SpectrumRequest, // 0x39
 
     // === 3.5 状态同步命令 ===
     StatusRequest,
@@ -28,57 +34,141 @@ pub enum RadioCommand {
     PowerOn,
 
     // === 4 AF 菜单 ===
-    SetSpeakerVol { vol: u8 },      // 0x0D, 0~30
-    SetHeadphoneVol { vol: u8 },    // 0x0E, 0~80
-    SetMicGain { gain: u8 },        // 0x0F, 0~100
-    SetCompandor { ratio: u8 },     // 0x10, 0~14
-    SetBassEq { value: u8 },        // 0x11, 0~40
-    SetTrebleEq { value: u8 },      // 0x12, 0~40
+    SetSpeakerVol {
+        vol: u8,
+    }, // 0x0D, 0~30
+    SetHeadphoneVol {
+        vol: u8,
+    }, // 0x0E, 0~80
+    SetMicGain {
+        gain: u8,
+    }, // 0x0F, 0~100
+    SetCompandor {
+        ratio: u8,
+    }, // 0x10, 0~14
+    SetBassEq {
+        value: u8,
+    }, // 0x11, 0~40
+    SetTrebleEq {
+        value: u8,
+    }, // 0x12, 0~40
 
     // === 5 RF 菜单 ===
-    SetRfg { gain: u8 },            // 0x13, 0~100
-    SetIfg { gain: u8 },            // 0x14, 0~80
-    SetSql { level: u8 },           // 0x15, 0~20
-    SetAgc { level: u8 },           // 0x16, 0~5
-    SetAmp { mode: AmpMode },       // 0x17
-    SetFilter { index: u8 },        // 0x18, 1~86
-    SetNr { on: bool },             // 0x19
-    SetNb { on: bool },             // 0x1A
-    SetAb { mode: AbMode },         // 0x1B
-    SetSplit { on: bool },          // 0x1C
-    SetBand { band: Band },         // 0x1D
-    SetNrThreshold { value: u8 },   // 0x1E, 1~200
-    SetNbThreshold { value: u8 },   // 0x1F, 0~15
-    SetPeakThreshold { value: u8 }, // 0x20, 0~20
-    SetTuner { mode: TunerMode },   // 0x21
-    SetSpectrumSpan { span: SpectrumSpan }, // 0x22
-    SetSpectrumRef { value: u8 },   // 0x23, 1~20
-    SetSpectrumSpeed { value: u8 }, // 0x24, 1~30
-    SetDisplayMode { mode: DisplayMode },   // 0x25
-    SetCtcss { tx_ctcss: u8, rx_ctcss: u8, lead_tone: u8 }, // 0x26
-    DeviceTypeRequest,              // 0x27
-    SetPowerLevel { level: u8 },    // 0x28, 0~100
-    SetRit { value: u8 },           // 0x29, 0~120
-    SetXit { value: u8 },           // 0x2A, 0~120
-    SetLeadToneTime { ms: u8 },     // 0x2B, 50~300
-    SetHighLowPower { level: PowerLevel }, // 0x2C
-    MeterRequest,                   // 0x2D
-    ParamsRequest,                  // 0x2E
+    SetRfg {
+        gain: u8,
+    }, // 0x13, 0~100
+    SetIfg {
+        gain: u8,
+    }, // 0x14, 0~80
+    SetSql {
+        level: u8,
+    }, // 0x15, 0~20
+    SetAgc {
+        level: u8,
+    }, // 0x16, 0~5
+    SetAmp {
+        mode: AmpMode,
+    }, // 0x17
+    SetFilter {
+        index: u8,
+    }, // 0x18, 1~86
+    SetNr {
+        on: bool,
+    }, // 0x19
+    SetNb {
+        on: bool,
+    }, // 0x1A
+    SetAb {
+        mode: AbMode,
+    }, // 0x1B
+    SetSplit {
+        on: bool,
+    }, // 0x1C
+    SetBand {
+        band: Band,
+    }, // 0x1D
+    SetNrThreshold {
+        value: u8,
+    }, // 0x1E, 1~200
+    SetNbThreshold {
+        value: u8,
+    }, // 0x1F, 0~15
+    SetPeakThreshold {
+        value: u8,
+    }, // 0x20, 0~20
+    SetTuner {
+        mode: TunerMode,
+    }, // 0x21
+    SetSpectrumSpan {
+        span: SpectrumSpan,
+    }, // 0x22
+    SetSpectrumRef {
+        value: u8,
+    }, // 0x23, 1~20
+    SetSpectrumSpeed {
+        value: u8,
+    }, // 0x24, 1~30
+    SetDisplayMode {
+        mode: DisplayMode,
+    }, // 0x25
+    SetCtcss {
+        tx_ctcss: u8,
+        rx_ctcss: u8,
+        lead_tone: u8,
+    }, // 0x26
+    DeviceTypeRequest, // 0x27
+    SetPowerLevel {
+        level: u8,
+    }, // 0x28, 0~100
+    SetRit {
+        value: u8,
+    }, // 0x29, 0~120
+    SetXit {
+        value: u8,
+    }, // 0x2A, 0~120
+    SetLeadToneTime {
+        ms: u8,
+    }, // 0x2B, 50~300
+    SetHighLowPower {
+        level: PowerLevel,
+    }, // 0x2C
+    MeterRequest,      // 0x2D
+    ParamsRequest,     // 0x2E
 
     // === 6 CW 命令 ===
-    SetKeyType { key_type: KeyType },   // 0x2F
-    SetSidetoneVol { vol: u8 },         // 0x30, 0~15
-    SetSidetoneFreq { freq: u8 },       // 0x31, 40~200 (×10)
-    SetTxRxDelay { delay: u8 },         // 0x32, 0~50 (×40)
-    SetUsbDataFormat { format: UsbDataFormat }, // 0x33
-    SetCwTraining { on: bool },         // 0x34
-    SetKeySpeed { speed: u8 },          // 0x35, 5~48
-    SetCwDecode { on: bool },           // 0x36
-    SetCwDecodeThreshold { value: u8 }, // 0x37, 1~50
+    SetKeyType {
+        key_type: KeyType,
+    }, // 0x2F
+    SetSidetoneVol {
+        vol: u8,
+    }, // 0x30, 0~15
+    SetSidetoneFreq {
+        freq: u8,
+    }, // 0x31, 40~200 (×10)
+    SetTxRxDelay {
+        delay: u8,
+    }, // 0x32, 0~50 (×40)
+    SetUsbDataFormat {
+        format: UsbDataFormat,
+    }, // 0x33
+    SetCwTraining {
+        on: bool,
+    }, // 0x34
+    SetKeySpeed {
+        speed: u8,
+    }, // 0x35, 5~48
+    SetCwDecode {
+        on: bool,
+    }, // 0x36
+    SetCwDecodeThreshold {
+        value: u8,
+    }, // 0x37, 1~50
 
     // === 7 MESH 数传 ===
     /// data 为 MESH 数据包结构 (不包含外层0xA5帧头)
-    SendMeshData { data: Vec<u8> },     // 0x38
+    SendMeshData {
+        data: Vec<u8>,
+    }, // 0x38
 
     // === 8 信道操作 ===
     WriteChannel {
@@ -90,9 +180,13 @@ pub enum RadioCommand {
         tx_ctcss: u8,
         rx_ctcss: u8,
         name: [u8; 12],
-    },                                  // 0x40
-    ReadChannel { channel: u16 },       // 0x41
-    SetChannelMode { mode: ChannelMode }, // 0x42
+    }, // 0x40
+    ReadChannel {
+        channel: u16,
+    }, // 0x41
+    SetChannelMode {
+        mode: ChannelMode,
+    }, // 0x42
     WriteDmrChannel {
         channel: u16,
         call_format: u8,
@@ -112,12 +206,16 @@ pub enum RadioCommand {
         scr_seed: u16,
         ch_bs_mode: u8,
         validat: u8,
-    },                                  // 0x43
-    ReadDmrChannel { channel: u16 },    // 0x44
-    SetIqBandwidth { bw: u8 },          // 0x45, 0~6
+    }, // 0x43
+    ReadDmrChannel {
+        channel: u16,
+    }, // 0x44
+    SetIqBandwidth {
+        bw: u8,
+    }, // 0x45, 0~6
 
     // === 9 功放控制 ===
-    PaParamsRequest,                    // 0x48
+    PaParamsRequest, // 0x48
 
     // === 10 电台设置 ===
     SetFreqHopping {
@@ -125,13 +223,13 @@ pub enum RadioCommand {
         hop_count: u16,
         encrypt: bool,
         key: u8,
-    },                                  // 0x49
+    }, // 0x49
     SetSwrScan {
         on: bool,
         start_freq: u32,
         end_freq: u32,
         step_freq: u32,
-    },                                  // 0x50
+    }, // 0x50
 
     SetRadioSettings {
         settings_byte: u8,
@@ -147,7 +245,7 @@ pub enum RadioCommand {
         hw_version: u8,
         fw_main: u8,
         fw_sub: u8,
-    },                                  // 0x51
+    }, // 0x51
 
     SetTime {
         year: u8,
@@ -156,26 +254,63 @@ pub enum RadioCommand {
         hour: u8,
         minute: u8,
         second: u8,
-    },                                  // 0x52
+    }, // 0x52
 
-    ProductTypeRequest,                 // 0x53
+    ProductTypeRequest, // 0x53
 
-    SetIturRegion { write: bool, region: IturRegion }, // 0x54
+    SetIturRegion {
+        write: bool,
+        region: IturRegion,
+    }, // 0x54
 
     // === 11 工程设置 ===
-    SetIqCalibration { write: bool, value: u8 },     // 0x55
-    SetPoBiasVoltage { write: bool, value: u8 },     // 0x56
-    SetP2BiasVoltage { write: bool, value: u8 },     // 0x56 (同命令字)
-    SetPdPowerCalibration { write: bool, value: u8 }, // 0x57
-    SetSwrCalibration { write: bool, value: u8 },    // 0x58
-    SetTxFreqCalibration { write: bool, value: u8 }, // 0x59
-    SetRxFreqCalibration { write: bool, value: u8 }, // 0x60
-    SetSMeterCalibration { write: bool, value: u8 }, // 0x61
-    SetVoltageCalibration { write: bool, value: u8 }, // 0x62
-    SetAttenuatorCalibration { write: bool, value: u8 }, // 0x63
-    SetEngineeringMode { on: bool },                 // 0x64
-    ReadDeviceId,                                    // 0x66
-    SetProductType { model: u8 },                    // 0x67
+    SetIqCalibration {
+        write: bool,
+        value: u8,
+    }, // 0x55
+    SetPoBiasVoltage {
+        write: bool,
+        value: u8,
+    }, // 0x56
+    SetP2BiasVoltage {
+        write: bool,
+        value: u8,
+    }, // 0x56 (同命令字)
+    SetPdPowerCalibration {
+        write: bool,
+        value: u8,
+    }, // 0x57
+    SetSwrCalibration {
+        write: bool,
+        value: u8,
+    }, // 0x58
+    SetTxFreqCalibration {
+        write: bool,
+        value: u8,
+    }, // 0x59
+    SetRxFreqCalibration {
+        write: bool,
+        value: u8,
+    }, // 0x60
+    SetSMeterCalibration {
+        write: bool,
+        value: u8,
+    }, // 0x61
+    SetVoltageCalibration {
+        write: bool,
+        value: u8,
+    }, // 0x62
+    SetAttenuatorCalibration {
+        write: bool,
+        value: u8,
+    }, // 0x63
+    SetEngineeringMode {
+        on: bool,
+    }, // 0x64
+    ReadDeviceId, // 0x66
+    SetProductType {
+        model: u8,
+    }, // 0x67
 
     // === 12 固件升级 ===
     FwInit {
@@ -183,11 +318,14 @@ pub enum RadioCommand {
         crc32: u32,
         size: u32,
         packet_size: u16,
-    },                                               // 0x68
-    FwData { packet_no: u16, data: Vec<u8> },        // 0x69
-    FwGetBitmap,                                      // 0x6A
-    FwExecute,                                        // 0x6B
-    FwReadVersion,                                    // 0x6C
+    }, // 0x68
+    FwData {
+        packet_no: u16,
+        data: Vec<u8>,
+    }, // 0x69
+    FwGetBitmap,   // 0x6A
+    FwExecute,     // 0x6B
+    FwReadVersion, // 0x6C
 }
 
 impl RadioCommand {
@@ -328,7 +466,11 @@ impl RadioCommand {
             RadioCommand::SetSpectrumSpeed { value } => data.push(*value),
             RadioCommand::SpectrumRequest => {}
             RadioCommand::SetDisplayMode { mode } => data.push(*mode as u8),
-            RadioCommand::SetCtcss { tx_ctcss, rx_ctcss, lead_tone } => {
+            RadioCommand::SetCtcss {
+                tx_ctcss,
+                rx_ctcss,
+                lead_tone,
+            } => {
                 data.push(*tx_ctcss);
                 data.push(*rx_ctcss);
                 data.push(*lead_tone);
@@ -381,9 +523,24 @@ impl RadioCommand {
                 data.push((ch & 0xFF) as u8);
             }
             RadioCommand::WriteDmrChannel {
-                channel, call_format, tx_cc, rx_cc, slot, call_id, own_id,
-                ch_type, rx_ctcss, tx_ctcss, sqlevel, spkgain,
-                dmrexist, dmod_gain, scr_en, scr_seed, ch_bs_mode, validat,
+                channel,
+                call_format,
+                tx_cc,
+                rx_cc,
+                slot,
+                call_id,
+                own_id,
+                ch_type,
+                rx_ctcss,
+                tx_ctcss,
+                sqlevel,
+                spkgain,
+                dmrexist,
+                dmod_gain,
+                scr_en,
+                scr_seed,
+                ch_bs_mode,
+                validat,
             } => {
                 let ch = *channel as u16;
                 data.push((ch >> 8) as u8);
@@ -417,7 +574,12 @@ impl RadioCommand {
             RadioCommand::SetIqBandwidth { bw } => data.push(*bw),
             RadioCommand::PaParamsRequest => {}
             // 电台设置
-            RadioCommand::SetFreqHopping { on, hop_count, encrypt, key } => {
+            RadioCommand::SetFreqHopping {
+                on,
+                hop_count,
+                encrypt,
+                key,
+            } => {
                 data.push(if *on { 1 } else { 0 });
                 let hc = *hop_count;
                 data.push((hc >> 8) as u8);
@@ -425,7 +587,12 @@ impl RadioCommand {
                 data.push(if *encrypt { 1 } else { 0 });
                 data.push(*key);
             }
-            RadioCommand::SetSwrScan { on, start_freq, end_freq, step_freq } => {
+            RadioCommand::SetSwrScan {
+                on,
+                start_freq,
+                end_freq,
+                step_freq,
+            } => {
                 data.push(if *on { 1 } else { 0 });
                 data.extend((*start_freq).to_be_bytes());
                 data.extend((*end_freq).to_be_bytes());
@@ -460,7 +627,14 @@ impl RadioCommand {
                 data.push(*fw_main);
                 data.push(*fw_sub);
             }
-            RadioCommand::SetTime { year, month, day, hour, minute, second } => {
+            RadioCommand::SetTime {
+                year,
+                month,
+                day,
+                hour,
+                minute,
+                second,
+            } => {
                 data.push(*year);
                 data.push(*month);
                 data.push(*day);
@@ -520,7 +694,12 @@ impl RadioCommand {
             RadioCommand::ReadDeviceId => {}
             RadioCommand::SetProductType { model } => data.push(*model),
             // 固件升级
-            RadioCommand::FwInit { version, crc32, size, packet_size } => {
+            RadioCommand::FwInit {
+                version,
+                crc32,
+                size,
+                packet_size,
+            } => {
                 data.extend((*version).to_be_bytes());
                 data.extend((*crc32).to_be_bytes());
                 data.extend((*size).to_be_bytes());
@@ -528,7 +707,10 @@ impl RadioCommand {
                 data.push((ps >> 8) as u8);
                 data.push((ps & 0xFF) as u8);
             }
-            RadioCommand::FwData { packet_no, data: fw_data } => {
+            RadioCommand::FwData {
+                packet_no,
+                data: fw_data,
+            } => {
                 let pn = *packet_no;
                 data.push((pn >> 8) as u8);
                 data.push((pn & 0xFF) as u8);
@@ -580,10 +762,14 @@ mod tests {
             RadioCommand::SetSpeakerVol { vol: 20 },
             RadioCommand::SetRfg { gain: 50 },
             RadioCommand::SetNr { on: true },
-            RadioCommand::SetTuner { mode: TunerMode::Tune },
+            RadioCommand::SetTuner {
+                mode: TunerMode::Tune,
+            },
             RadioCommand::MeterRequest,
             RadioCommand::SetKeySpeed { speed: 20 },
-            RadioCommand::SetChannelMode { mode: ChannelMode::Vfo },
+            RadioCommand::SetChannelMode {
+                mode: ChannelMode::Vfo,
+            },
             RadioCommand::ReadDeviceId,
         ];
 
